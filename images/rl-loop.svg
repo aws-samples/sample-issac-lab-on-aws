@@ -1,0 +1,127 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 750 680" font-family="'Segoe UI', Arial, sans-serif">
+  <defs>
+    <filter id="shadow" x="-2%" y="-2%" width="104%" height="104%">
+      <feDropShadow dx="2" dy="2" stdDeviation="3" flood-opacity="0.12"/>
+    </filter>
+    <linearGradient id="envGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1565C0"/>
+      <stop offset="100%" style="stop-color:#0D47A1"/>
+    </linearGradient>
+    <linearGradient id="agentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E65100"/>
+      <stop offset="100%" style="stop-color:#BF360C"/>
+    </linearGradient>
+    <marker id="arrowDown" markerWidth="10" markerHeight="7" refX="5" refY="7" orient="auto">
+      <path d="M0,0 L5,7 L10,0" fill="#455A64"/>
+    </marker>
+    <marker id="arrowUp" markerWidth="10" markerHeight="7" refX="5" refY="0" orient="auto">
+      <path d="M0,7 L5,0 L10,7" fill="#455A64"/>
+    </marker>
+  </defs>
+
+  <rect width="750" height="680" fill="#FAFBFC" rx="12"/>
+
+  <!-- Title -->
+  <text x="375" y="32" text-anchor="middle" font-size="18" font-weight="700" fill="#232F3E">Reinforcement Learning Loop</text>
+
+  <!-- Environment Box -->
+  <rect x="200" y="55" width="350" height="170" rx="12" fill="url(#envGrad)" filter="url(#shadow)"/>
+  <text x="375" y="82" text-anchor="middle" font-size="16" font-weight="700" fill="white">Environment</text>
+  <text x="375" y="100" text-anchor="middle" font-size="11" fill="#90CAF9">Isaac Sim: 4,096 parallel simulations</text>
+  <line x1="230" y1="110" x2="520" y2="110" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>
+
+  <rect x="220" y="120" width="150" height="30" rx="5" fill="rgba(255,255,255,0.12)"/>
+  <text x="295" y="139" text-anchor="middle" font-size="11" fill="#BBDEFB">Terrain Generation</text>
+
+  <rect x="380" y="120" width="150" height="30" rx="5" fill="rgba(255,255,255,0.12)"/>
+  <text x="455" y="139" text-anchor="middle" font-size="11" fill="#BBDEFB">Physics Simulation</text>
+
+  <rect x="220" y="158" width="150" height="30" rx="5" fill="rgba(255,255,255,0.12)"/>
+  <text x="295" y="177" text-anchor="middle" font-size="11" fill="#BBDEFB">Collision Detection</text>
+
+  <rect x="380" y="158" width="150" height="30" rx="5" fill="rgba(255,255,255,0.12)"/>
+  <text x="455" y="177" text-anchor="middle" font-size="11" fill="#BBDEFB">Contact Forces</text>
+
+  <!-- Down Arrow: Observation + Reward -->
+  <line x1="375" y1="225" x2="375" y2="370" stroke="#455A64" stroke-width="3"/>
+  <polygon points="375,375 368,360 382,360" fill="#455A64"/>
+
+  <!-- Observation Box (left) -->
+  <rect x="50" y="260" width="200" height="160" rx="10" fill="white" stroke="#1565C0" stroke-width="1.5" filter="url(#shadow)"/>
+  <rect x="50" y="260" width="200" height="28" rx="10" fill="#1565C0"/>
+  <text x="150" y="279" text-anchor="middle" font-size="12" font-weight="600" fill="white">Observation</text>
+
+  <text x="70" y="308" font-size="11" fill="#333">Joint angles / velocities</text>
+  <text x="70" y="330" font-size="11" fill="#333">Body orientation</text>
+  <text x="70" y="352" font-size="11" fill="#333">Foot contact states</text>
+  <text x="70" y="374" font-size="11" fill="#333">Command velocity</text>
+  <text x="70" y="400" font-size="10" fill="#999">48-dim observation vector</text>
+
+  <line x1="250" y1="340" x2="365" y2="310" stroke="#1565C0" stroke-width="1.5" stroke-dasharray="4,3"/>
+
+  <!-- Reward Box (right) -->
+  <rect x="500" y="260" width="200" height="160" rx="10" fill="white" stroke="#2E7D32" stroke-width="1.5" filter="url(#shadow)"/>
+  <rect x="500" y="260" width="200" height="28" rx="10" fill="#2E7D32"/>
+  <text x="600" y="279" text-anchor="middle" font-size="12" font-weight="600" fill="white">Reward</text>
+
+  <rect x="515" y="298" width="170" height="24" rx="4" fill="#E8F5E9"/>
+  <text x="600" y="314" text-anchor="middle" font-size="11" fill="#2E7D32">+ Walking well</text>
+
+  <rect x="515" y="328" width="170" height="24" rx="4" fill="#FFEBEE"/>
+  <text x="600" y="344" text-anchor="middle" font-size="11" fill="#C62828">- Falling down</text>
+
+  <rect x="515" y="358" width="170" height="24" rx="4" fill="#FFEBEE"/>
+  <text x="600" y="374" text-anchor="middle" font-size="11" fill="#C62828">- Energy waste</text>
+
+  <rect x="515" y="388" width="170" height="24" rx="4" fill="#FFEBEE"/>
+  <text x="600" y="404" text-anchor="middle" font-size="11" fill="#C62828">- Velocity error</text>
+
+  <line x1="500" y1="340" x2="390" y2="310" stroke="#2E7D32" stroke-width="1.5" stroke-dasharray="4,3"/>
+
+  <!-- Agent Box -->
+  <rect x="200" y="385" width="350" height="210" rx="12" fill="url(#agentGrad)" filter="url(#shadow)"/>
+  <text x="375" y="412" text-anchor="middle" font-size="16" font-weight="700" fill="white">Agent (Neural Network)</text>
+  <text x="375" y="430" text-anchor="middle" font-size="11" fill="#FFCCBC">Actor-Critic Architecture</text>
+  <line x1="230" y1="440" x2="520" y2="440" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>
+
+  <!-- Actor -->
+  <rect x="220" y="450" width="145" height="90" rx="8" fill="rgba(255,255,255,0.12)"/>
+  <text x="292" y="472" text-anchor="middle" font-size="12" font-weight="600" fill="white">Actor</text>
+  <text x="292" y="492" text-anchor="middle" font-size="10" fill="#FFCCBC">obs -> action</text>
+  <text x="292" y="510" text-anchor="middle" font-size="10" fill="#FFE0B2">[512 -> 256 -> 128]</text>
+  <text x="292" y="528" text-anchor="middle" font-size="9" fill="#FFE0B2">Joint torques (12)</text>
+
+  <!-- Critic -->
+  <rect x="385" y="450" width="145" height="90" rx="8" fill="rgba(255,255,255,0.12)"/>
+  <text x="457" y="472" text-anchor="middle" font-size="12" font-weight="600" fill="white">Critic</text>
+  <text x="457" y="492" text-anchor="middle" font-size="10" fill="#FFCCBC">obs -> value</text>
+  <text x="457" y="510" text-anchor="middle" font-size="10" fill="#FFE0B2">[512 -> 256 -> 128]</text>
+  <text x="457" y="528" text-anchor="middle" font-size="9" fill="#FFE0B2">Future reward est.</text>
+
+  <!-- PPO Badge -->
+  <rect x="270" y="555" width="210" height="28" rx="14" fill="rgba(255,255,255,0.2)"/>
+  <text x="375" y="573" text-anchor="middle" font-size="11" font-weight="600" fill="white">PPO (Proximal Policy Optimization)</text>
+
+  <!-- Up Arrow: Action -->
+  <rect x="50" y="480" width="130" height="80" rx="10" fill="white" stroke="#E65100" stroke-width="1.5" filter="url(#shadow)"/>
+  <rect x="50" y="480" width="130" height="26" rx="10" fill="#E65100"/>
+  <text x="115" y="498" text-anchor="middle" font-size="12" font-weight="600" fill="white">Action</text>
+  <text x="115" y="525" text-anchor="middle" font-size="11" fill="#333">12 joint torques</text>
+  <text x="115" y="545" text-anchor="middle" font-size="10" fill="#999">continuous control</text>
+
+  <!-- Action arrow going up -->
+  <path d="M 115 480 L 115 230 L 200 140" fill="none" stroke="#E65100" stroke-width="2.5" marker-end="url(#arrowAction)"/>
+  <defs>
+    <marker id="arrowAction" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <path d="M0,0 L10,3.5 L0,7" fill="#E65100"/>
+    </marker>
+  </defs>
+
+  <!-- Loop Label -->
+  <rect x="30" y="355" width="95" height="24" rx="12" fill="#FFF3E0" stroke="#E65100" stroke-width="1"/>
+  <text x="77" y="371" text-anchor="middle" font-size="10" font-weight="600" fill="#E65100">next step</text>
+
+  <!-- Bottom: Cycle description -->
+  <rect x="100" y="625" width="550" height="40" rx="8" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <text x="375" y="650" text-anchor="middle" font-size="12" fill="#455A64">Environment -> Observation + Reward -> Agent -> Action -> Environment (repeat 147M times)</text>
+</svg>

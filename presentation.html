@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Physical AI Workshop — $12로 로봇 걷게 만들기</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+  :root {
+    --bg: #06080f;
+    --surface: #0c1022;
+    --border: #1e293b;
+    --text: #e2e8f0;
+    --text-dim: #64748b;
+    --text-muted: #475569;
+    --blue: #60a5fa;
+    --purple: #a78bfa;
+    --pink: #f472b6;
+    --green: #34d399;
+    --orange: #fb923c;
+    --cyan: #22d3ee;
+    --slide-w: 1280px;
+    --slide-h: 720px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #000;
+    font-family: 'Noto Sans KR', 'Inter', sans-serif;
+    color: var(--text);
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+  }
+
+  /* ── Slide Container ── */
+  .deck {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .slide {
+    position: absolute;
+    width: var(--slide-w);
+    height: var(--slide-h);
+    background: var(--bg);
+    border-radius: 12px;
+    overflow: hidden;
+    display: none;
+    flex-direction: column;
+    padding: 56px 64px;
+    transform: scale(1);
+    box-shadow: 0 0 80px rgba(0,0,0,0.5);
+  }
+  .slide.active { display: flex; }
+
+  /* Auto-scale */
+  @media (max-width: 1300px) or (max-height: 740px) {
+    .slide {
+      transform-origin: center center;
+      transform: scale(calc(min(100vw / 1280, 100vh / 720) * 0.95));
+    }
+  }
+
+  /* ── Slide Nav ── */
+  .nav {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 100;
+    background: rgba(12,16,34,0.9);
+    backdrop-filter: blur(8px);
+    padding: 8px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+  }
+  .nav button {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+  }
+  .nav button:hover { border-color: var(--purple); color: var(--purple); }
+  .nav .counter {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+    min-width: 50px;
+    text-align: center;
+  }
+
+  /* ── Common Styles ── */
+  .slide-num {
+    position: absolute;
+    top: 24px;
+    right: 32px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+  }
+
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+  }
+
+  h1 { font-size: 42px; font-weight: 900; line-height: 1.2; }
+  h2 { font-size: 32px; font-weight: 800; line-height: 1.3; }
+  h3 { font-size: 22px; font-weight: 700; line-height: 1.4; }
+
+  .grad-blue { background: linear-gradient(135deg, #60a5fa, #38bdf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .grad-purple { background: linear-gradient(135deg, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .grad-pink { background: linear-gradient(135deg, #f472b6, #fb923c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .grad-green { background: linear-gradient(135deg, #34d399, #22d3ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .grad-multi { background: linear-gradient(135deg, #60a5fa, #a78bfa, #f472b6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+  .subtitle {
+    font-size: 16px;
+    color: var(--text-dim);
+    margin-top: 8px;
+    font-weight: 400;
+    line-height: 1.6;
+  }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; }
+
+  .card {
+    padding: 20px;
+    border-radius: 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+  }
+  .card h4 {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .card p, .card li {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+  .card ul { padding-left: 16px; }
+  .card li { margin-bottom: 4px; }
+
+  .stat-card {
+    text-align: center;
+    padding: 24px 16px;
+  }
+  .stat-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 28px;
+    font-weight: 800;
+  }
+  .stat-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 6px;
+    font-weight: 600;
+  }
+
+  .code-block {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    line-height: 1.7;
+    color: #94a3b8;
+    overflow: hidden;
+  }
+  .code-block .kw { color: var(--purple); }
+  .code-block .str { color: var(--green); }
+  .code-block .flag { color: var(--orange); }
+  .code-block .comment { color: #334155; }
+
+  .img-frame {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface);
+  }
+  .img-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .bullet-list {
+    list-style: none;
+    padding: 0;
+  }
+  .bullet-list li {
+    padding: 8px 0;
+    font-size: 16px;
+    color: var(--text);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    line-height: 1.5;
+  }
+  .bullet-list li::before {
+    content: '▸';
+    color: var(--purple);
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .bullet-list .dim { color: var(--text-dim); font-size: 14px; }
+
+  .table-wrap {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  th {
+    background: rgba(129,140,248,0.08);
+    padding: 10px 16px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--purple);
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 10px 16px;
+    border-bottom: 1px solid rgba(30,41,59,0.5);
+    color: #94a3b8;
+  }
+  tr:last-child td { border-bottom: none; }
+  td:first-child { color: var(--text); font-weight: 600; }
+
+  .flex-center { display: flex; align-items: center; justify-content: center; flex: 1; }
+  .flex-col { display: flex; flex-direction: column; }
+  .gap-sm { gap: 12px; }
+  .gap-md { gap: 20px; }
+  .gap-lg { gap: 32px; }
+  .flex-1 { flex: 1; }
+  .mt-auto { margin-top: auto; }
+  .mt-sm { margin-top: 12px; }
+  .mt-md { margin-top: 20px; }
+  .mt-lg { margin-top: 32px; }
+
+  .pipeline-flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    justify-content: center;
+  }
+  .p-step {
+    text-align: center;
+    padding: 14px 18px;
+    border-radius: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    min-width: 120px;
+  }
+  .p-step .p-icon { font-size: 24px; margin-bottom: 6px; }
+  .p-step .p-name { font-size: 12px; font-weight: 700; color: var(--text); }
+  .p-step .p-detail { font-size: 10px; color: var(--text-muted); margin-top: 3px; }
+  .p-arrow { color: var(--text-muted); padding: 0 6px; font-size: 16px; }
+
+  .highlight-box {
+    padding: 16px 24px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .highlight-box.purple {
+    background: rgba(167,139,250,0.08);
+    border: 1px solid rgba(167,139,250,0.15);
+    color: var(--purple);
+  }
+  .highlight-box.green {
+    background: rgba(52,211,153,0.08);
+    border: 1px solid rgba(52,211,153,0.15);
+    color: var(--green);
+  }
+  .highlight-box.blue {
+    background: rgba(96,165,250,0.08);
+    border: 1px solid rgba(96,165,250,0.15);
+    color: var(--blue);
+  }
+
+  .footer-line {
+    position: absolute;
+    bottom: 20px;
+    left: 64px;
+    right: 64px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+  }
+
+  /* Phase bars */
+  .phase-bar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 16px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+  }
+  .phase-bar .phase-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .phase-bar .phase-text { margin-left: 10px; }
+  .phase-bar .phase-title { font-size: 14px; font-weight: 700; }
+  .phase-bar .phase-desc { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .phase-bar .phase-result {
+    margin-left: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+<!-- ==================== SLIDE 1: Title ==================== -->
+<div class="slide active" id="s1">
+  <div class="flex-col" style="justify-content: center; align-items: center; flex: 1; text-align: center;">
+    <div style="font-size: 48px; margin-bottom: 16px;">🐾</div>
+    <h1><span class="grad-multi">Physical AI Workshop</span></h1>
+    <h2 style="font-weight: 400; font-size: 26px; color: var(--text-dim); margin-top: 12px;">$12로 로봇 걷게 만들기</h2>
+    <p style="font-size: 15px; color: var(--text-muted); margin-top: 24px; max-width: 700px; line-height: 1.7;">
+      Isaac Lab + PPO로 ANYmal-C 4족 보행 로봇이<br>
+      거친 지형에서 걷는 법을 학습하는 전체 과정
+    </p>
+    <div class="grid-4 mt-lg" style="width: 100%; max-width: 700px;">
+      <div class="card stat-card"><div class="stat-val" style="color: var(--blue);">75분</div><div class="stat-label">훈련 시간</div></div>
+      <div class="card stat-card"><div class="stat-val" style="color: var(--purple);">$12</div><div class="stat-label">총 비용</div></div>
+      <div class="card stat-card"><div class="stat-val" style="color: var(--pink);">4,096</div><div class="stat-label">병렬 환경</div></div>
+      <div class="card stat-card"><div class="stat-val" style="color: var(--green);">1.47억</div><div class="stat-label">timestep</div></div>
+    </div>
+  </div>
+  <div class="footer-line">
+    <span>Physical AI Workshop</span>
+    <span>Isaac Lab · PPO · ANYmal-C · AWS g6e.4xlarge</span>
+  </div>
+</div>
+
+<!-- ==================== SLIDE 2: Agenda ==================== -->
+<div class="slide" id="s2">
+  <span class="slide-num">02</span>
+  <div class="tag" style="background: rgba(129,140,248,0.1); color: var(--purple); border: 1px solid rgba(129,140,248,0.2);">📋 AGENDA</div>
+  <h2>워크샵 구성</h2>
+  <p class="subtitle">7개 Lab + 3개 Appendix · 총 170분</p>
+  <div class="grid-2 mt-md flex-1">
+    <div class="flex-col gap-sm">
+      <div class="card" style="border-left: 3px solid var(--blue);">
+        <h4 style="color: var(--blue);">Lab 1 · Physical AI 핵심 개념 <span style="color:var(--text-muted); font-weight:400">10분</span></h4>
+        <p>RL 기초, PPO 알고리즘, Sim-to-Real 개념</p>
+      </div>
+      <div class="card" style="border-left: 3px solid var(--blue);">
+        <h4 style="color: var(--blue);">Lab 2 · AWS GPU 인프라 구축 <span style="color:var(--text-muted); font-weight:400">20분</span></h4>
+        <p>Terraform으로 g6e.4xlarge 프로비저닝</p>
+      </div>
+      <div class="card" style="border-left: 3px solid var(--purple);">
+        <h4 style="color: var(--purple);">Lab 3 · Docker 이미지 빌드 <span style="color:var(--text-muted); font-weight:400">30분</span></h4>
+        <p>Isaac Sim + Isaac Lab 컨테이너 구성</p>
+      </div>
+      <div class="card" style="border-left: 3px solid var(--purple);">
+        <h4 style="color: var(--purple);">Lab 4 · PPO 강화학습 훈련 <span style="color:var(--text-muted); font-weight:400">75분</span></h4>
+        <p>4,096 환경 병렬 학습 실행</p>
+      </div>
+    </div>
+    <div class="flex-col gap-sm">
+      <div class="card" style="border-left: 3px solid var(--pink);">
+        <h4 style="color: var(--pink);">Lab 5 · 학습 결과 분석 <span style="color:var(--text-muted); font-weight:400">15분</span></h4>
+        <p>보상 곡선, 에피소드 길이, 지형 난이도</p>
+      </div>
+      <div class="card" style="border-left: 3px solid var(--pink);">
+        <h4 style="color: var(--pink);">Lab 6 · Play 모드 & Export <span style="color:var(--text-muted); font-weight:400">10분</span></h4>
+        <p>비디오 생성, JIT/ONNX 정책 export</p>
+      </div>
+      <div class="card" style="border-left: 3px solid var(--green);">
+        <h4 style="color: var(--green);">Lab 7 · 정리 & 다음 단계 <span style="color:var(--text-muted); font-weight:400">10분</span></h4>
+        <p>terraform destroy, Sim-to-Real 로드맵</p>
+      </div>
+      <div class="card" style="border-left: 3px solid var(--text-muted); opacity: 0.7;">
+        <h4>Appendix A·B·C</h4>
+        <p>트러블슈팅 12선, 비용 분석, SW 버전</p>
+      </div>
+    </div>
+  </div>
+  <div class="footer-line"><span>Physical AI Workshop</span><span>02 / Agenda</span></div>
+</div>
+
+<!-- ==================== SLIDE 3: Architecture ==================== -->
+<div class="slide" id="s3">
+  <span class="slide-num">03</span>
+  <div class="tag" style="background: rgba(96,165,250,0.1); color: var(--blue); border: 1px solid rgba(96,165,250,0.2);">🏗️ LAB 1</div>
+  <h2>전체 아키텍처</h2>
+  <p class="subtitle">Terraform → EC2 GPU → Isaac Lab Docker → PPO 학습 → Policy Export</p>
+  <div class="flex-center flex-1 mt-sm">
+    <div class="img-frame" style="width: 100%; max-height: 420px;">
+      <img src=".gitbook/assets/architecture.png" alt="architecture">
+    </div>
+  </div>
+  <div class="footer-line"><span>Physical AI Workshop</span><span>03 / Architecture</span></div>
+</div>
+
+<!-- ==================== SLIDE 4: Infrastructure ==================== -->
+<div class="slide" id="s4">
+  <span class="slide-num">04</span>
+  <div class="tag" style="background: rgba(96,165,250,0.1); color: var(--blue); border: 1px solid rgba(96,165,250,0.2);">☁️ LAB 2</div>
+  <h2>AWS GPU 인프라</h2>
+  <p class="subtitle">Terraform 한 줄로 전체 인프라를 코드로 구축</p>
+  <div class="grid-2 mt-md flex-1">
+    <div class="flex-col gap-sm">
+      <div class="table-wrap">
+        <table>
+          <tr><th>리소스</th><th>스펙</th></tr>
+          <tr><td>인스턴스</td><td>g6e.4xlarge (16 vCPU, 64 GB)</td></tr>
+          <tr><td>GPU</td><td>NVIDIA L40S 48 GB VRAM</td></tr>
+          <tr><td>Root EBS</td><td>300 GB gp3 (Docker 이미지)</td></tr>
+          <tr><td>Data EBS</td><td>500 GB gp3 (체크포인트)</td></tr>
+          <tr><td>NVMe</td><td>Instance Store (캐시)</td></tr>
+          <tr><td>모니터링</td><td>CloudWatch GPU idle 자동 Stop</td></tr>
+        </table>
+      </div>
+      <div class="highlight-box blue">
+        💰 시간당 ~$3 · 전체 워크샵 ~$12
+      </div>
+    </div>
+    <div class="code-block" style="font-size: 12px;">
+      <span class="comment"># 3분 만에 전체 인프라 배포</span><br>
+      <span class="kw">terraform</span> init<br>
+      <span class="kw">terraform</span> plan<br>
+      <span class="kw">terraform</span> apply<br><br>
+      <span class="comment"># SSH 접속</span><br>
+      <span class="kw">ssh</span> <span class="flag">-i</span> key.pem ubuntu@$(<br>
+      &nbsp;&nbsp;<span class="kw">terraform</span> output <span class="flag">-raw</span> public_ip<br>
+      )<br><br>
+      <span class="comment"># 부팅 스크립트 확인 (15-25분)</span><br>
+      <span class="kw">tail</span> <span class="flag">-f</span> /var/log/isaac-lab-setup.log<br>
+      <span class="comment"># "Isaac Lab setup COMPLETE"</span>
+    </div>
+  </div>
+  <div class="footer-line"><span>Physical AI Workshop</span><span>04 / Infrastructure</span></div>
+</div>
+
+<!-- ==================== SLIDE 5: Docker Build ==================== -->
+<div class="slide" id="s5">
+  <span class="slide-num">05</span>
+  <div class="tag" style="background: rgba(167,139,250,0.1); color: var(--purple); border: 1px solid rgba(167,139,250,0.2);">🐳 LAB 3</div>
+  <h2>Isaac Lab Docker 이미지</h2>
+  <p class="subtitle">26.8 GB 컨테이너: Isaac Sim 4.5.0 + Isaac Lab v2.1.0 + RSL-RL</p>
+  <div class="grid-2 mt-md flex-1">
+    <div class="flex-col gap-sm">
+      <div class="card">
+        <h4 style="color: var(--orange);">⚠️ 핵심 함정 3가지</h4>
+        <ul>
+          <li>NGC에 Isaac Lab 이미지 없음 → 소스 빌드 필요</li>
+          <li>코어 <code>isaaclab</code> 패키지 누락 → 수동 설치</li>
+          <li>기본 entrypoint가 스트리밍 모드 → 오버라이드 필수</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4 style="color: var(--green);">✅ 빌드 3단계</h4>
+        <ul>
+          <li><code>docker compose --profile base build</code></li>
+          <li><code>pip install --no-build-isolation -e isaaclab</code></li>
+          <li><code>docker commit → isaac-lab-ready</code></li>
+        </ul>
+      </div>
+    </div>
+    <div class="code-block" style="font-size: 11px;">
+      <span class="comment"># Step 1: 소스에서 빌드 (~40분)</span><br>
+      <span class="kw">docker compose</span> <span class="flag">--profile</span> base build<br><br>
+      <span class="comment"># Step 2: 코어 패키지 + RL 라이브러리</span><br>
+      <span class="kw">docker run</span> <span class="flag">--name</span> setup <span class="flag">--gpus</span> all \<br>
+      &nbsp;&nbsp;<span class="flag">--entrypoint</span> bash isaac-lab-base \<br>
+      &nbsp;&nbsp;<span class="flag">-c</span> <span class="str">'pip install --no-build-isolation \</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="str">-e /workspace/isaaclab/source/isaaclab</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="str">&& ./isaaclab.sh -i rsl_rl'</span><br><br>
+      <span class="comment"># Step 3: 이미지 확정</span><br>
+      <span class="kw">docker commit</span> setup isaac-lab-ready<br>
+    </div>
+  </div>
+  <div class="footer-line"><span>Physical AI Workshop</span><span>05 / Docker Build</span></div>
+</div>
+
+<!-- ==================== SLIDE 6: Training ==================== -->
+<div class="slide" id="s6">
+  <span class="slide-num">06</span>
+  <div class="tag" style="background: rgba(167,139,250,0.1); color: var(--purple); border: 1px solid rgba(167,139,250,0.2);">🏋️ LAB 4</div>
+  <h2>PPO 강화학습 훈련</h2>
+  <p class="subtitle">4,096 병렬 환경 · 1,500 iterations · 75분</p>
+  <div class="grid-2 mt-md flex-1">
+    <div class="flex-col gap-sm">
+      <div class="phase-bar" style="background: rgba(96,165,250,0.06); border: 1px solid rgba(96,165,250,0.1);">
+        <div class="phase-num" style="background: rgba(96,165,250,0.15); color: var(--blue);">1</div>
+        <div class="phase-text">
+          <div class="phase-title" style="color: var(--blue);">탐색기</div>
+          <div class="phase-desc">iter 0-40 · 랜덤 탐색</div>
+        </div>
+        <div class="phase-result" style="color: var(--blue);">-0.5 → -4.9</div>
+      </div>
+      <div class="phase-bar" style="background: rgba(167,139,250,0.06); border: 1px solid rgba(167,139,250,0.1);">
+        <div class="phase-num" style="background: rgba(167,139,250,0.15); color: var(--purple);">2</div>
+        <div class="phase-text">
+          <div class="phase-title" style="color: var(--purple);">기초 학습</div>
+          <div class="phase-desc">iter 40-120 · 보행 패턴 습득</div>
+        </div>
+        <div class="phase-result" style="color: var(--purple);">-4.9 → +5.0</div>
+      </div>
+      <div class="phase-bar" style="background: rgba(244,114,182,0.06); border: 1px solid rgba(244,114,182,0.1);">
+        <div class="phase-num" style="background: rgba(244,114,182,0.15); color: var(--pink);">3</div>
+        <div class="phase-text">
+          <div class="phase-title" style="color: var(--pink);">정교화</div>
+          <div class="phase-desc">iter 120-300 · 안정적 보행</div>
+        </div>
+        <div class="phase-result" style="color: var(--pink);">+5.0 → +15.0</div>
+      </div>
+      <div class="phase-bar" style="background: rgba(52,211,153,0.06); border: 1px solid rgba(52,211,153,0.1);">
+        <div class="phase-num" style="background: rgba(52,211,153,0.15); color: var(--green);">4</div>
+        <div class="phase-text">
+          <div class="phase-title" style="color: var(--green);">수렴</div>
+          <div class="phase-desc">iter 300-1500 · 정책 수렴</div>
+        </div>
+        <div class="phase-result" style="color: var(--green);">+15.0 → +16.3</div>
+      </div>
+      <div class="highlight-box green mt-sm">
+        📈 에피소드 길이: 13 → 897 steps (×66배)
+      </div>
+    </div>
+    <div class="img-frame" style="max-height: 400px;">
+      <img src=".gitbook/assets/dashboard_screenshot.png" alt="dashboard">
+    </div>
+  </div>
+  <div class="footer-line"><span>Physical AI Workshop</span><span>06 / Training</span></div>
+</div>
+
+<!-- ==================== SLIDE 7: Results ==================== -->
+<div class="slide" id="s7">
+  <span class="slide-num">07</span>
+  <div class="tag" style="background: rgba(244,114,182,0.1); color: var(--pink); border: 1px solid rgba(244,114,182,0.2);">📊 LAB 5</div>
+  <h2>학습 결과</h2>
+  <p class="subtitle">보상 +16.29 · 지형 난이도 5.9/6.25 · VRAM 10/48 GB</p>
+  <div class="grid-2 mt-md" style="flex:1;">
+    <div class="img-frame" style="max-height: 220px;">
+      <img src=".gitbook/assets/image.png" alt="dashboard2">
+    </div>
+    <div class="img-frame" style="max-height: 220px;">
+      <img src=".gitbook/assets/dashboard_screenshot3.png" alt="dashboard3">
+    </div>
+  </div>
+  <div class="grid-4 mt-md">
+    <div class="card stat-card"><div class="stat-val" style="color:var(--green);">+16.29</div><div class="stat-label">최종 보상</div></div>
+    <div class="card stat-card"><div class="stat-val" style="color:var(--blue);">897</div><div class="stat-label">에피소드 길이 (steps)</div></div>
+    <div class="card stat-card"><div class="stat-val" style="color:var(--purple);">5.9</div><div class="stat-label">지형 난이도 / 6.25</div></div>
+    <div class="card stat-card"><div class="stat-val" style="color:var(--pink);">10 GB</div><div class="stat-label">VRAM 사용 / 48 GB</div></div>
+  </div>
+  <div class="footer-line"><span>Physical AI Workshop</span><span>07 / Results</span></div>
+</div>
+
+<!-- ==================== SLIDE 8: Play Mode ==================== -->
+<div class="slide" id="s8">
+  <span class="slide-num">08</span>
+  <div class="tag" style="background: rgba(244,114,182,0.1); color: var(--pink); border: 1px solid rgba(244,114,182,0.2);">🎬 LAB 6</div>
+  <h2>Play 모드 & Policy Export</h2>
+  <p class="subtitle">학습된 정책을 시각화하고, 실제 로봇용으로 변환</p>
+  <div class="grid-2 mt-md flex-1">
+    <div class="flex-col gap-sm">
+      <div class="img-frame" style="max-height: 260px;">
+        <img src=".gitbook/assets/play30_frame_15s.png" alt="play mode">
+      </div>
+      <p style="text-align:center; font-size: 12px; color: var(--text-muted);">ANYmal-C rough terrain 보행 (30초 비디오)</p>
+    </div>
+    <div class="flex-col gap-sm">
+      <div class="table-wrap">
+        <table>
+          <tr><th>산출물</th><th>크기</th><th>용도</th></tr>
+          <tr><td>model_1499.pt</td><td>6.6 MB</td><td>학습 재개 / fine-tuning</td></tr>
+          <tr><td>policy.pt</td><td>1.2 MB</td><td>C++ JIT 실시간 추론</td></tr>
+          <tr><td>policy.onnx</td><td>1.1 MB</td><td>TensorRT / Jetson 배포</td></tr>
+          <tr><td>rl-video-*.mp4</td><td>2.8 MB</td><td>시각적 검증</td></tr>
+        </table>
+      </div>
+      <div class="code-block" style="font-size: 11px;">
+        <span class="kw">docker run</span> <span class="flag">--rm --gpus</span> all \<br>
+        &nbsp;&nbsp;<span class="flag">--entrypoint</span> isaaclab.sh \<br>
+        &nbsp;&nbsp;<span class="flag">-p</span> play.py \<br>
+        &nbsp;&nbsp;<span class="flag">--task</span> <span class="str">Isaac-Velocity-Rough-Anymal-C-v0</span> \<br>
+        &nbsp;&nbsp;<span class="flag">--headless --video --video_length</span> 1500
+      </div>
+    </div>
+  </div>
+  <div class="footer-line"><span>Physical AI Workshop</span><span>08 / Play Mode</span></div>
+</div>
+
+<!-- ==================== SLIDE 9: Sim-to-Real ==================== -->
+<div class="slide" id="s9">
+  <span class="slide-num">09</span>
+  <div class="tag" style="background: rgba(167,139,250,0.1); color: var(--purple); border: 1px solid rgba(167,139,250,0.2);">🤖 SIM-TO-REAL</div>
+  <h2>Sim-to-Real 파이프라인</h2>
+  <p class="subtitle">시뮬레이션에서 학습한 "뇌"를 실제 로봇에 이식</p>
+  <div class="flex-center flex-1">
+    <div class="img-frame" style="width: 100%; max-height: 420px;">
+      <img src="images/sim_to_real_pipeline.png" alt="sim-to-real pipeline">
+    </div>
+  </div>
+  <div class="footer-line"><span>Physical AI Workshop</span><span>09 / Sim-to-Real</span></div>
+</div>
+
+<!-- ==================== SLIDE 10: Deployment ==================== -->
+<div class="slide" id="s10">
+  <span class="slide-num">10</span>
+  <div class="tag" style="background: rgba(244,114,182,0.1); color: var(--pink); border: 1px solid rgba(244,114,182,0.2);">🦿 DEPLOYMENT</div>
+  <h2>ANYmal-C 온보드 배포 구성</h2>
+  <p class="subtitle">48차원 관측 → Jetson Orin TensorRT 추론 → 12차원 관절 제어</p>
+  <div class="flex-center flex-1">
+    <div class="img-frame" style="width: 100%; max-height: 420px;">
+      <img src="images/anymal_c_deployment.png" alt="deployment architecture">
+    </div>
+  </div>
+  <div class="footer-line"><span>Physical AI Workshop</span><span>10 / Deployment</span></div>
+</div>
+
+<!-- ==================== SLIDE 11: Troubleshooting ==================== -->
+<div class="slide" id="s11">
+  <span class="slide-num">11</span>
+  <div class="tag" style="background: rgba(251,146,60,0.1); color: var(--orange); border: 1px solid rgba(251,146,60,0.2);">🔧 APPENDIX</div>
+  <h2>실전 트러블슈팅 12선</h2>
+  <p class="subtitle">공식 문서에 없는 실전 함정과 해결법</p>
+  <div class="grid-2 mt-md flex-1" style="font-size: 13px;">
+    <div class="table-wrap">
+      <table>
+        <tr><th>#</th><th>함정</th><th>심각도</th></tr>
+        <tr><td>1</td><td>dpkg lock 경합</td><td style="color: var(--orange);">🟡</td></tr>
+        <tr><td>2</td><td>EBS 디바이스 이름 (Nitro)</td><td style="color: var(--orange);">🟡</td></tr>
+        <tr><td>3</td><td>Instance store 이미 마운트</td><td style="color: var(--orange);">🟡</td></tr>
+        <tr><td>4</td><td>Terraform templatefile 충돌</td><td style="color: var(--orange);">🟡</td></tr>
+        <tr><td>5</td><td>user_data 재실행 안 됨</td><td style="color: var(--green);">🟢</td></tr>
+        <tr><td>6</td><td>Isaac Lab NGC 이미지 없음</td><td style="color: var(--pink);">🔴</td></tr>
+      </table>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <tr><th>#</th><th>함정</th><th>심각도</th></tr>
+        <tr><td>7</td><td>코어 isaaclab 패키지 누락</td><td style="color: var(--pink);">🔴</td></tr>
+        <tr><td>8</td><td>Docker entrypoint 스트리밍 모드</td><td style="color: var(--pink);">🔴</td></tr>
+        <tr><td>9</td><td>훈련 스크립트 경로 변경</td><td style="color: var(--orange);">🟡</td></tr>
+        <tr><td>10</td><td>setuptools 빌드 격리</td><td style="color: var(--pink);">🔴</td></tr>
+        <tr><td>11</td><td>Volume mount → editable 파괴</td><td style="color: var(--orange);">🟡</td></tr>
+        <tr><td>12</td><td>셰이더 캐시 첫 실행 지연</td><td style="color: var(--green);">🟢</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="highlight-box purple mt-sm">
+    💡 🔴 Critical 4개 — 이것을 모르면 훈련 시작조차 할 수 없습니다
+  </div>
+  <div class="footer-line"><span>Physical AI Workshop</span><span>11 / Troubleshooting</span></div>
+</div>
+
+<!-- ==================== SLIDE 12: Cost ==================== -->
+<div class="slide" id="s12">
+  <span class="slide-num">12</span>
+  <div class="tag" style="background: rgba(52,211,153,0.1); color: var(--green); border: 1px solid rgba(52,211,153,0.2);">💰 COST</div>
+  <h2>비용 분석</h2>
+  <p class="subtitle">클라우드 GPU로 로봇 AI를 학습하는 실제 비용</p>
+  <div class="grid-3 mt-lg">
+    <div class="card" style="text-align: center; border-color: rgba(96,165,250,0.2);">
+      <div style="font-size: 36px; margin-bottom: 8px;">☁️</div>
+      <h3 style="color: var(--blue);">이번 실습</h3>
+      <div class="stat-val mt-sm" style="color: var(--blue); font-size: 36px;">~$12</div>
+      <p class="mt-sm" style="font-size: 12px; color: var(--text-muted);">g6e.4xlarge On-Demand<br>Seoul 리전 · 4시간</p>
+    </div>
+    <div class="card" style="text-align: center; border-color: rgba(52,211,153,0.2);">
+      <div style="font-size: 36px; margin-bottom: 8px;">💚</div>
+      <h3 style="color: var(--green);">비용 최적화</h3>
+      <div class="stat-val mt-sm" style="color: var(--green); font-size: 36px;">~$2.50</div>
+      <p class="mt-sm" style="font-size: 12px; color: var(--text-muted);">g6e.4xlarge Spot<br>Virginia 리전</p>
+    </div>
+    <div class="card" style="text-align: center; border-color: rgba(167,139,250,0.2);">
+      <div style="font-size: 36px; margin-bottom: 8px;">🚀</div>
+      <h3 style="color: var(--purple);">대규모</h3>
+      <div class="stat-val mt-sm" style="color: var(--purple); font-size: 36px;">~$8</div>
+      <p class="mt-sm" style="font-size: 12px; color: var(--text-muted);">g6e.12xlarge Spot (4×L40S)<br>Virginia 리전</p>
+    </div>
+  </div>
+  <div class="grid-2 mt-lg">
+    <div class="highlight-box blue">
+      ⏰ GPU 30분 idle → CloudWatch 자동 Stop
+    </div>
+    <div class="highlight-box green">
+      💾 S3 체크포인트 자동 동기화 (Spot 대비)
+    </div>
+  </div>
+  <div class="footer-line"><span>Physical AI Workshop</span><span>12 / Cost</span></div>
+</div>
+
+<!-- ==================== SLIDE 13: Summary ==================== -->
+<div class="slide" id="s13">
+  <span class="slide-num">13</span>
+  <div class="tag" style="background: rgba(52,211,153,0.1); color: var(--green); border: 1px solid rgba(52,211,153,0.2);">✅ SUMMARY</div>
+  <h2>이번 워크샵에서 달성한 것</h2>
+  <div class="mt-md flex-1">
+    <ul class="bullet-list">
+      <li>Terraform으로 AWS GPU 인프라를 <strong>코드로</strong> 구축</li>
+      <li>Isaac Sim + Isaac Lab Docker 이미지 빌드 <span class="dim">(26.8 GB)</span></li>
+      <li><strong>4,096개</strong> 병렬 환경에서 PPO 강화학습 실행</li>
+      <li><strong>75분</strong> 만에 <strong>1.47억</strong> timestep 학습 완료</li>
+      <li>ANYmal-C가 rough terrain에서 <strong>안정적으로 보행</strong></li>
+      <li>학습된 정책을 <strong>JIT / ONNX</strong>로 export <span class="dim">(sim-to-real 준비)</span></li>
+      <li>총 비용: <strong style="color: var(--green);">~$12 (₩16,000)</strong></li>
+    </ul>
+    <div class="pipeline-flow mt-lg">
+      <div class="p-step"><div class="p-icon">🏗️</div><div class="p-name">인프라</div><div class="p-detail">Terraform</div></div>
+      <div class="p-arrow">→</div>
+      <div class="p-step"><div class="p-icon">🐳</div><div class="p-name">Docker</div><div class="p-detail">Isaac Lab</div></div>
+      <div class="p-arrow">→</div>
+      <div class="p-step"><div class="p-icon">🏋️</div><div class="p-name">훈련</div><div class="p-detail">PPO · 75분</div></div>
+      <div class="p-arrow">→</div>
+      <div class="p-step"><div class="p-icon">📊</div><div class="p-name">분석</div><div class="p-detail">+16.29 보상</div></div>
+      <div class="p-arrow">→</div>
+      <div class="p-step"><div class="p-icon">🎬</div><div class="p-name">Play</div><div class="p-detail">비디오 · Export</div></div>
+      <div class="p-arrow">→</div>
+      <div class="p-step"><div class="p-icon">🤖</div><div class="p-name">Sim-to-Real</div><div class="p-detail">Jetson 배포</div></div>
+    </div>
+  </div>
+  <div class="footer-line"><span>Physical AI Workshop</span><span>13 / Summary</span></div>
+</div>
+
+<!-- ==================== SLIDE 14: Thank You ==================== -->
+<div class="slide" id="s14">
+  <div class="flex-col" style="justify-content: center; align-items: center; flex: 1; text-align: center;">
+    <div style="font-size: 56px; margin-bottom: 20px;">🐾</div>
+    <h1><span class="grad-multi">감사합니다</span></h1>
+    <p style="font-size: 18px; color: var(--text-dim); margin-top: 16px; line-height: 1.8;">
+      $12로 4족 보행 로봇이 걷는 법을 배웠습니다
+    </p>
+    <div class="grid-3 mt-lg" style="width: 100%; max-width: 600px;">
+      <div class="card stat-card"><div class="stat-val" style="color:var(--blue); font-size: 20px;">Isaac Lab</div><div class="stat-label">시뮬레이션</div></div>
+      <div class="card stat-card"><div class="stat-val" style="color:var(--purple); font-size: 20px;">PPO</div><div class="stat-label">알고리즘</div></div>
+      <div class="card stat-card"><div class="stat-val" style="color:var(--pink); font-size: 20px;">ANYmal-C</div><div class="stat-label">로봇</div></div>
+    </div>
+    <div style="margin-top: 40px; font-size: 13px; color: var(--text-muted);">
+      <span style="color: var(--text-dim);">GitHub</span> · comeddy/pai-sim-isaaclab
+    </div>
+  </div>
+</div>
+
+</div><!-- /deck -->
+
+<!-- Navigation -->
+<div class="nav">
+  <button onclick="go(-1)">← Prev</button>
+  <span class="counter" id="counter">1 / 14</span>
+  <button onclick="go(1)">Next →</button>
+</div>
+
+<script>
+  let cur = 0;
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  const counter = document.getElementById('counter');
+
+  function show(n) {
+    slides[cur].classList.remove('active');
+    cur = (n + total) % total;
+    slides[cur].classList.add('active');
+    counter.textContent = `${cur + 1} / ${total}`;
+  }
+
+  function go(d) { show(cur + d); }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') { e.preventDefault(); go(1); }
+    if (e.key === 'ArrowLeft' || e.key === 'Backspace') { e.preventDefault(); go(-1); }
+    if (e.key === 'Home') { e.preventDefault(); show(0); }
+    if (e.key === 'End') { e.preventDefault(); show(total - 1); }
+    if (e.key === 'f' || e.key === 'F') {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else document.documentElement.requestFullscreen();
+    }
+  });
+
+  // Touch support
+  let touchX = 0;
+  document.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; });
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - touchX;
+    if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1);
+  });
+</script>
+</body>
+</html>

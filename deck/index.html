@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Physical AI on AWS — Workshop Overview</title>
+<style>
+  /* prevents a flash of the first slide at its authored styles before deck-stage.js attaches the shadow root */
+  deck-stage:not(:defined) { visibility: hidden; }
+
+  @font-face { font-family: 'Amazon Ember'; src: url('fonts/AmazonEmber_Rg.ttf') format('truetype'); font-weight: 400; }
+  @font-face { font-family: 'Amazon Ember'; src: url('fonts/AmazonEmber_Md.ttf') format('truetype'); font-weight: 500; }
+  @font-face { font-family: 'Amazon Ember'; src: url('fonts/AmazonEmber_Bd.ttf') format('truetype'); font-weight: 700; }
+  @font-face { font-family: 'Amazon Ember'; src: url('fonts/AmazonEmber_He.ttf') format('truetype'); font-weight: 800; }
+
+  html, body { margin: 0; padding: 0; height: 100%; background: #0F1B2D; }
+  a { color: #FF9900; text-decoration: none; }
+  a:hover { color: #EC7211; text-decoration: underline; }
+
+  /* stand-in for the design-canvas-only `style-hover` attribute used on the two CTA buttons below */
+  a.cta:hover { background: #EC7211 !important; color: #0F1B2D !important; text-decoration: none !important; }
+</style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+
+  <section data-label="Title" data-speaker-notes="Physical AI workshop: end-to-end quadruped RL on AWS. Point out the demo video link." style="display: flex; flex-direction: row; background: linear-gradient(135deg, #0F1B2D 0%, #161E2D 55%, #1E2A3F 100%); font-family: 'Amazon Ember', sans-serif; color: #ffffff; overflow: hidden;">
+    <div style="flex: 0 0 46%; display: flex; flex-direction: column; justify-content: space-between; padding: 90px 0 80px 100px; box-sizing: border-box;">
+      <img src="assets/logo-aws.png" alt="AWS" style="width: 130px; align-self: flex-start;" />
+      <div style="display: flex; flex-direction: column; gap: 36px;">
+        <div style="align-self: flex-start; background: rgba(20,15,30,0.7); backdrop-filter: blur(8px); border-radius: 6px; padding: 10px 20px; font-size: 26px; font-weight: 500; color: #d6dbe3; white-space: nowrap;">Hands-on workshop · 7 Labs</div>
+        <h1 style="margin: 0; font-size: 82px; font-weight: 800; line-height: 1.08; letter-spacing: -1px;">Physical AI on AWS</h1>
+        <p style="margin: 0; font-size: 36px; font-weight: 400; line-height: 1.4; color: #c3cad6;">Train a quadruped robot to walk with reinforcement learning — NVIDIA Isaac Lab on AWS GPU instances, end to end in about 3 hours for about $12.</p>
+        <div style="display: flex; align-items: center; gap: 28px;">
+          <a href="https://youtu.be/k98MgurW9y0" target="_blank" class="cta" style="display: inline-flex; align-items: center; gap: 14px; background: #FF9900; color: #0F1B2D; border-radius: 999px; padding: 20px 40px; font-size: 28px; font-weight: 700; text-decoration: none; white-space: nowrap;"><span>Watch the demo</span><span>→</span></a>
+          <span style="font-size: 24px; color: #8b95a5;">youtu.be/k98MgurW9y0</span>
+        </div>
+      </div>
+      <p style="margin: 0; font-size: 24px; color: #8b95a5;">github.com/comeddy/pai-sim-isaaclab</p>
+    </div>
+    <div style="flex: 1; position: relative;">
+      <img src="../images/play30_frame_15s.png" alt="ANYmal-C walking on rough terrain in Isaac Lab" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;" />
+      <div style="position: absolute; inset: 0; background: linear-gradient(90deg, #0F1B2D 0%, rgba(15,27,45,0) 30%);"></div>
+      <div style="position: absolute; left: 40px; bottom: 40px; background: rgba(20,15,30,0.7); backdrop-filter: blur(8px); border-radius: 6px; padding: 10px 20px; font-size: 24px; font-weight: 500; color: #ffffff;">ANYmal-C · trained policy on rough terrain</div>
+      <div style="position: absolute; right: 40px; bottom: 40px; background: rgba(20,15,30,0.7); backdrop-filter: blur(8px); border-radius: 6px; padding: 16px 24px; display: flex; flex-direction: column; gap: 4px; text-align: right;">
+        <span style="font-size: 26px; font-weight: 700; color: #ffffff;">Youngjin Kim</span>
+        <span style="font-size: 24px; font-weight: 400; color: #c3cad6;">Sr. Solutions Architect</span>
+        <span style="font-size: 24px; font-weight: 400; color: #c3cad6;">AWS Korea</span>
+      </div>
+    </div>
+  </section>
+
+  <section data-label="Workshop at a glance" data-speaker-notes="Walk through the 7 labs and the headline numbers: 3 hours total, 75 minutes training, about 12 dollars." style="display: flex; flex-direction: column; background: #ffffff; font-family: 'Amazon Ember', sans-serif; color: #0f141a; padding: 90px 100px 80px 100px; box-sizing: border-box;">
+    <h2 style="margin: 0 0 16px 0; font-size: 60px; font-weight: 700; letter-spacing: -0.5px;">Workshop at a glance</h2>
+    <p style="margin: 0 0 52px 0; font-size: 30px; color: #5f6b7a;">Seven labs take you from an empty AWS account to an exported Sim-to-Real policy.</p>
+    <div style="display: flex; gap: 64px; flex: 1;">
+      <div style="flex: 1.4; display: flex; flex-direction: column;">
+        <div style="display: grid; grid-template-columns: 110px 1fr 150px; padding: 14px 20px; font-size: 24px; font-weight: 700; color: #5f6b7a; border-bottom: 2px solid #0f141a;"><span>Lab</span><span>What you do</span><span style="text-align: right;">Time</span></div>
+        <div style="display: grid; grid-template-columns: 110px 1fr 150px; padding: 16px 20px; font-size: 26px; border-bottom: 1px solid #e9ebed; align-items: center;"><span style="font-weight: 700; color: #EC7211;">1</span><span>Physical AI core concepts</span><span style="text-align: right; color: #5f6b7a;">10 min</span></div>
+        <div style="display: grid; grid-template-columns: 110px 1fr 150px; padding: 16px 20px; font-size: 26px; border-bottom: 1px solid #e9ebed; align-items: center;"><span style="font-weight: 700; color: #EC7211;">2</span><span>Provision AWS GPU infrastructure with Terraform</span><span style="text-align: right; color: #5f6b7a;">20 min</span></div>
+        <div style="display: grid; grid-template-columns: 110px 1fr 150px; padding: 16px 20px; font-size: 26px; border-bottom: 1px solid #e9ebed; align-items: center;"><span style="font-weight: 700; color: #EC7211;">3</span><span>Build the Isaac Sim / Isaac Lab Docker image</span><span style="text-align: right; color: #5f6b7a;">30 min</span></div>
+        <div style="display: grid; grid-template-columns: 110px 1fr 150px; padding: 16px 20px; font-size: 26px; border-bottom: 1px solid #e9ebed; align-items: center;"><span style="font-weight: 700; color: #EC7211;">4</span><span>Train quadruped locomotion with PPO (Proximal Policy Optimization)</span><span style="text-align: right; color: #5f6b7a;">75 min</span></div>
+        <div style="display: grid; grid-template-columns: 110px 1fr 150px; padding: 16px 20px; font-size: 26px; border-bottom: 1px solid #e9ebed; align-items: center;"><span style="font-weight: 700; color: #EC7211;">5</span><span>Analyze and visualize training results</span><span style="text-align: right; color: #5f6b7a;">15 min</span></div>
+        <div style="display: grid; grid-template-columns: 110px 1fr 150px; padding: 16px 20px; font-size: 26px; border-bottom: 1px solid #e9ebed; align-items: center;"><span style="font-weight: 700; color: #EC7211;">6</span><span>Play mode — visualize and export the policy</span><span style="text-align: right; color: #5f6b7a;">10 min</span></div>
+        <div style="display: grid; grid-template-columns: 110px 1fr 150px; padding: 16px 20px; font-size: 26px; align-items: center;"><span style="font-weight: 700; color: #EC7211;">7</span><span>Clean up and next steps</span><span style="text-align: right; color: #5f6b7a;">10 min</span></div>
+      </div>
+      <div style="flex: 1; display: flex; flex-direction: column; gap: 24px;">
+        <div style="background: #161E2D; border-radius: 16px; padding: 36px 40px; color: #ffffff; display: flex; flex-direction: column; gap: 8px;">
+          <span style="font-size: 64px; font-weight: 800; color: #FF9900;">~$12</span>
+          <span style="font-size: 26px; color: #c3cad6;">total cost, about 3 hours end to end</span>
+        </div>
+        <div style="background: #fafafa; border-radius: 16px; padding: 32px 40px; display: flex; flex-direction: column; gap: 14px;">
+          <span style="font-size: 26px; font-weight: 700;">You need</span>
+          <span style="font-size: 25px; color: #414d5c;">AWS account with g6e quota approved</span>
+          <span style="font-size: 25px; color: #414d5c;">Terraform ≥ 1.5 and AWS CLI</span>
+          <span style="font-size: 25px; color: #414d5c;">NVIDIA NGC account + API key</span>
+          <span style="font-size: 25px; color: #414d5c;">SSH key pair</span>
+        </div>
+        <div style="background: #fafafa; border-radius: 16px; padding: 32px 40px; display: flex; flex-direction: column; gap: 14px;">
+          <span style="font-size: 26px; font-weight: 700;">Field-tested</span>
+          <span style="font-size: 25px; color: #414d5c;">Includes 12 real deployment pitfalls and fixes not found in official docs.</span>
+        </div>
+      </div>
+    </div>
+    <p style="margin: 40px 0 0 0; font-size: 24px; color: #5f6b7a;"><a href="https://github.com/comeddy/pai-sim-isaaclab" target="_blank" style="color: #0972d3;">github.com/comeddy/pai-sim-isaaclab</a></p>
+  </section>
+
+  <section data-label="Pipeline and results" data-speaker-notes="One terraform apply provisions everything; training reaches +16.29 mean reward in 75 minutes; policies export as TorchScript and ONNX. Close with the demo video." style="display: flex; flex-direction: column; background: #ffffff; font-family: 'Amazon Ember', sans-serif; color: #0f141a; padding: 90px 100px 80px 100px; box-sizing: border-box;">
+    <h2 style="margin: 0 0 16px 0; font-size: 60px; font-weight: 700; letter-spacing: -0.5px;">Pipeline and results</h2>
+    <p style="margin: 0 0 44px 0; font-size: 30px; color: #5f6b7a;">One <span style="font-family: 'Courier New', monospace;">terraform apply</span> provisions everything; one <span style="font-family: 'Courier New', monospace;">terraform destroy</span> cleans it all up.</p>
+    <div style="display: flex; gap: 64px; flex: 1; min-height: 0;">
+      <div style="flex: 1.5; display: flex; align-items: flex-start; justify-content: center; background: #fafafa; border-radius: 16px; padding: 28px; box-sizing: border-box;">
+        <img src="../images/architecture.png" alt="Architecture: Terraform provisions EC2 g6e with L40S GPU running Isaac Lab in Docker, syncing checkpoints to S3" style="max-width: 100%; max-height: 100%; object-fit: contain;" />
+      </div>
+      <div style="flex: 1; display: flex; flex-direction: column; gap: 22px;">
+        <div style="display: flex; gap: 22px;">
+          <div style="flex: 1; background: #161E2D; border-radius: 16px; padding: 28px 30px; color: #ffffff; display: flex; flex-direction: column; gap: 6px;">
+            <span style="font-size: 48px; font-weight: 800; color: #FF9900;">+16.29</span>
+            <span style="font-size: 24px; color: #c3cad6;">mean reward in 1,500 iterations</span>
+          </div>
+          <div style="flex: 1; background: #161E2D; border-radius: 16px; padding: 28px 30px; color: #ffffff; display: flex; flex-direction: column; gap: 6px;">
+            <span style="font-size: 48px; font-weight: 800; color: #FF9900;">4,096</span>
+            <span style="font-size: 24px; color: #c3cad6;">parallel environments on one L40S</span>
+          </div>
+        </div>
+        <div style="background: #fafafa; border-radius: 16px; padding: 28px 32px; display: flex; flex-direction: column; gap: 12px;">
+          <span style="font-size: 26px; font-weight: 700;">Sim-to-Real export</span>
+          <span style="font-size: 25px; color: #414d5c;">Trained policies export as TorchScript JIT (.pt) and ONNX (.onnx) for deployment on physical robots via TensorRT / Jetson.</span>
+        </div>
+        <div style="background: #fafafa; border-radius: 16px; padding: 28px 32px; display: flex; flex-direction: column; gap: 12px;">
+          <span style="font-size: 26px; font-weight: 700;">Cost controls built in</span>
+          <span style="font-size: 25px; color: #414d5c;">CloudWatch stops idle GPUs after 30 minutes; S3 checkpoint sync survives Spot interruptions.</span>
+        </div>
+        <a href="https://youtu.be/k98MgurW9y0" target="_blank" class="cta" style="display: flex; align-items: center; justify-content: space-between; background: #FF9900; color: #0F1B2D; border-radius: 16px; padding: 26px 32px; text-decoration: none;">
+          <span style="font-size: 28px; font-weight: 700;">Demo: trained ANYmal-C walking</span>
+          <span style="font-size: 28px; font-weight: 700;">youtu.be/k98MgurW9y0 →</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section data-label="Demo" data-speaker-notes="Play the 30-second recording of the trained policy. Full video also on YouTube." style="display: flex; flex-direction: column; background: #0F1B2D; font-family: 'Amazon Ember', sans-serif; color: #ffffff; padding: 80px 100px 70px 100px; box-sizing: border-box;">
+    <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 36px;">
+      <h2 style="margin: 0; font-size: 60px; font-weight: 700; letter-spacing: -0.5px;">Demo</h2>
+      <a href="https://youtu.be/k98MgurW9y0" target="_blank" style="display: inline-flex; align-items: center; gap: 12px; font-size: 26px; font-weight: 500; color: #FF9900; white-space: nowrap;"><span>Watch on YouTube</span><span>→</span></a>
+    </div>
+    <div style="flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; background: #000000; border-radius: 16px; overflow: hidden;">
+      <video src="../videos/anymal_c_play_30s.mp4" controls loop muted playsinline aria-label="30-second recording of the trained ANYmal-C policy walking on rough terrain" style="width: 100%; height: 100%; object-fit: contain;"></video>
+    </div>
+    <p style="margin: 28px 0 0 0; font-size: 24px; color: #8b95a5;">Trained ANYmal-C policy · Play mode, 16 environments · Isaac Lab</p>
+  </section>
+
+  <section data-label="Thanks" data-speaker-notes="Close and take questions." style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 44px; background: linear-gradient(135deg, #0F1B2D 0%, #161E2D 55%, #1E2A3F 100%); font-family: 'Amazon Ember', sans-serif; color: #ffffff;">
+    <img src="assets/logo-aws.png" alt="AWS" style="width: 150px;" />
+    <h2 style="margin: 0; font-size: 96px; font-weight: 800; letter-spacing: -1px;">Thank you</h2>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+      <span style="font-size: 30px; font-weight: 700;">Youngjin Kim</span>
+      <span style="font-size: 26px; color: #c3cad6;">Sr. Solutions Architect · AWS Korea</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 40px;">
+      <a href="https://github.com/comeddy/pai-sim-isaaclab" target="_blank" style="font-size: 24px; color: #FF9900;">github.com/comeddy/pai-sim-isaaclab</a>
+      <a href="https://youtu.be/k98MgurW9y0" target="_blank" style="font-size: 24px; color: #FF9900;">youtu.be/k98MgurW9y0</a>
+    </div>
+    <span style="position: absolute; left: 0; right: 0; bottom: 32px; text-align: center; font-size: 18px; color: #5f6b7a;">© 2026, Amazon Web Services, Inc. or its affiliates. All rights reserved.</span>
+  </section>
+
+</deck-stage>
+<script src="deck-stage.js"></script>
+</body>
+</html>

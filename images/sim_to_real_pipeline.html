@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sim-to-Real Pipeline</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #06080f;
+    font-family: 'Noto Sans KR', 'Inter', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 50px 40px;
+    color: #e2e8f0;
+  }
+
+  .canvas {
+    width: 1100px;
+    display: flex;
+    flex-direction: column;
+    gap: 36px;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+  }
+  .header h1 {
+    font-size: 26px;
+    font-weight: 800;
+    color: #f1f5f9;
+  }
+  .header h1 .sim { color: #60a5fa; }
+  .header h1 .arrow { color: #475569; margin: 0 8px; font-weight: 400; }
+  .header h1 .real { color: #f472b6; }
+  .header .sub {
+    font-size: 12px;
+    color: #475569;
+    margin-top: 6px;
+    letter-spacing: 1px;
+  }
+
+  /* Main two-column layout */
+  .pipeline-row {
+    display: grid;
+    grid-template-columns: 1fr 80px 1fr;
+    gap: 0;
+    align-items: stretch;
+  }
+
+  /* Zone card */
+  .zone {
+    border-radius: 20px;
+    padding: 28px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .zone::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 20px;
+    padding: 1.5px;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  .zone-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+  }
+
+  /* Sim zone */
+  .sim-zone {
+    background: linear-gradient(180deg, #0c1a2e 0%, #0a1225 100%);
+    border: 1px solid rgba(96,165,250,0.15);
+  }
+  .sim-zone::before {
+    background: linear-gradient(135deg, rgba(96,165,250,0.25), rgba(56,189,248,0.05));
+  }
+  .sim-zone .zone-badge {
+    background: rgba(96,165,250,0.12);
+    color: #60a5fa;
+    border: 1px solid rgba(96,165,250,0.2);
+  }
+
+  /* Real zone */
+  .real-zone {
+    background: linear-gradient(180deg, #1a0f1f 0%, #150d1a 100%);
+    border: 1px solid rgba(244,114,182,0.15);
+  }
+  .real-zone::before {
+    background: linear-gradient(135deg, rgba(244,114,182,0.25), rgba(192,132,252,0.05));
+  }
+  .real-zone .zone-badge {
+    background: rgba(244,114,182,0.12);
+    color: #f472b6;
+    border: 1px solid rgba(244,114,182,0.2);
+  }
+
+  /* Step card */
+  .step {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    transition: background 0.2s;
+  }
+  .step:last-child { margin-bottom: 0; }
+
+  .step-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .step-content { flex: 1; }
+  .step-title {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 3px;
+  }
+  .step-desc {
+    font-size: 12px;
+    color: #64748b;
+    line-height: 1.5;
+  }
+  .step-tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 6px;
+    margin-top: 6px;
+  }
+
+  /* Sim steps */
+  .sim-zone .step { background: rgba(96,165,250,0.03); }
+  .sim-zone .step:hover { background: rgba(96,165,250,0.06); }
+  .sim-zone .step-num { background: rgba(96,165,250,0.12); color: #60a5fa; }
+  .sim-zone .step-title { color: #93c5fd; }
+  .sim-zone .step-tag { background: rgba(96,165,250,0.1); color: #60a5fa; }
+
+  /* Real steps */
+  .real-zone .step { background: rgba(244,114,182,0.03); }
+  .real-zone .step:hover { background: rgba(244,114,182,0.06); }
+  .real-zone .step-num { background: rgba(244,114,182,0.12); color: #f472b6; }
+  .real-zone .step-title { color: #f9a8d4; }
+  .real-zone .step-tag { background: rgba(244,114,182,0.1); color: #f472b6; }
+
+  /* Down arrow between steps */
+  .step-arrow {
+    display: flex;
+    justify-content: center;
+    padding: 2px 0;
+    color: #334155;
+    font-size: 14px;
+  }
+
+  /* Transfer bridge (center column) */
+  .bridge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    padding: 0 8px;
+  }
+  .bridge-line {
+    position: absolute;
+    top: 25%;
+    bottom: 60%;
+    width: 2px;
+    background: linear-gradient(180deg, rgba(96,165,250,0.4), rgba(167,139,250,0.6), rgba(244,114,182,0.4));
+    border-radius: 1px;
+  }
+  .bridge-icon {
+    position: relative;
+    z-index: 2;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #1e1b4b, #312e81);
+    border: 2px solid rgba(167,139,250,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 2px;
+    box-shadow: 0 4px 20px rgba(124,58,237,0.2);
+  }
+  .bridge-icon .b-arrow {
+    font-size: 16px;
+    color: #a78bfa;
+  }
+  .bridge-label {
+    position: relative;
+    z-index: 2;
+    margin-top: 8px;
+    font-size: 9px;
+    font-weight: 700;
+    color: #7c3aed;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    writing-mode: horizontal-tb;
+    background: #06080f;
+    padding: 4px 8px;
+    border-radius: 4px;
+  }
+  .bridge-file {
+    position: relative;
+    z-index: 2;
+    margin-top: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    color: #c4b5fd;
+    background: rgba(124,58,237,0.15);
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid rgba(124,58,237,0.2);
+  }
+
+  /* Bottom highlight strip */
+  .highlight-strip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 16px 24px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(167,139,250,0.06), rgba(124,58,237,0.03));
+    border: 1px solid rgba(167,139,250,0.1);
+  }
+  .highlight-icon {
+    font-size: 20px;
+  }
+  .highlight-text {
+    font-size: 14px;
+    font-weight: 600;
+    color: #c4b5fd;
+  }
+  .highlight-text span {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    color: #a78bfa;
+  }
+
+  /* Stats bar */
+  .stats-bar {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+  }
+  .stat {
+    text-align: center;
+    padding: 12px 20px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid #1e293b;
+    min-width: 140px;
+  }
+  .stat-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    font-weight: 800;
+    color: #a78bfa;
+  }
+  .stat-label {
+    font-size: 10px;
+    color: #475569;
+    font-weight: 600;
+    margin-top: 3px;
+    letter-spacing: 0.5px;
+  }
+
+  .footer {
+    text-align: center;
+    font-size: 10px;
+    color: #1e293b;
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+<div class="canvas">
+
+  <div class="header">
+    <h1><span class="sim">Simulation</span><span class="arrow">→</span><span class="real">Real Robot</span></h1>
+    <div class="sub">1.47억 timestep의 경험이 1.1 MB 파일로 압축되어 실제 로봇의 "뇌"가 됩니다</div>
+  </div>
+
+  <div class="pipeline-row">
+
+    <!-- LEFT: Simulation -->
+    <div class="zone sim-zone">
+      <div class="zone-badge">☁️ 시뮬레이션 — AWS GPU 서버</div>
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title">PPO 강화학습 훈련</div>
+          <div class="step-desc">4,096개 병렬 환경에서 ANYmal-C 보행 정책 학습</div>
+          <span class="step-tag">75분 · 1,500 iterations</span>
+        </div>
+      </div>
+
+      <div class="step-arrow">↓</div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title">정책 Export</div>
+          <div class="step-desc">학습된 신경망을 이식 가능한 포맷으로 변환</div>
+          <span class="step-tag">policy.pt · policy.onnx</span>
+        </div>
+      </div>
+
+      <div class="step-arrow">↓</div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title">모델 전송</div>
+          <div class="step-desc">1.1 MB ONNX 파일을 로봇 온보드 컴퓨터로 전송</div>
+          <span class="step-tag">scp / USB / OTA</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CENTER: Bridge -->
+    <div class="bridge">
+      <div class="bridge-line"></div>
+      <div class="bridge-icon">
+        <span class="b-arrow">→</span>
+      </div>
+      <div class="bridge-label">전송</div>
+      <div class="bridge-file">1.1 MB</div>
+    </div>
+
+    <!-- RIGHT: Real Robot -->
+    <div class="zone real-zone">
+      <div class="zone-badge">🤖 실제 로봇 — 엣지 디바이스</div>
+
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <div class="step-title">센서 데이터 수집</div>
+          <div class="step-desc">IMU + 관절 인코더에서 48차원 관측 벡터 구성</div>
+          <span class="step-tag">200 Hz · 48-dim observation</span>
+        </div>
+      </div>
+
+      <div class="step-arrow">↓</div>
+
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <div class="step-title">TensorRT 추론</div>
+          <div class="step-desc">Jetson Orin에서 FP16 최적화 추론 실행</div>
+          <span class="step-tag">&lt; 0.1ms · policy.engine</span>
+        </div>
+      </div>
+
+      <div class="step-arrow">↓</div>
+
+      <div class="step">
+        <div class="step-num">6</div>
+        <div class="step-content">
+          <div class="step-title">관절 목표 위치 출력</div>
+          <div class="step-desc">12개 관절의 목표 각도를 PD 컨트롤러로 전달</div>
+          <span class="step-tag">12-dim action → PD controller</span>
+        </div>
+      </div>
+
+      <div class="step-arrow">↓</div>
+
+      <div class="step">
+        <div class="step-num">7</div>
+        <div class="step-content">
+          <div class="step-title">🐾 로봇이 걷는다!</div>
+          <div class="step-desc">PD 컨트롤러가 토크를 계산하여 12개 모터를 구동</div>
+          <span class="step-tag">Rough Terrain 자율 보행</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-bar">
+    <div class="stat">
+      <div class="stat-val">1.47억</div>
+      <div class="stat-label">학습 timestep</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val">1.1 MB</div>
+      <div class="stat-label">정책 파일 크기</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val">&lt; 0.1ms</div>
+      <div class="stat-label">추론 지연시간</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val">200 Hz</div>
+      <div class="stat-label">제어 주파수</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val">$12</div>
+      <div class="stat-label">총 학습 비용</div>
+    </div>
+  </div>
+
+  <!-- Highlight -->
+  <div class="highlight-strip">
+    <span class="highlight-icon">💡</span>
+    <span class="highlight-text"><span>1.47억</span> timestep의 경험이 <span>1.1 MB</span> 파일로 압축되어 실제 로봇의 "뇌"가 됩니다</span>
+  </div>
+
+  <div class="footer">Physical AI Workshop · Isaac Lab PPO → ONNX → TensorRT → ANYmal-C</div>
+
+</div>
+</body>
+</html>

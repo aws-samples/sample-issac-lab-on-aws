@@ -1,0 +1,17 @@
+# Table of contents
+
+* [Physical AI Workshop: $12로 로봇 걷게 만들기](README.md)
+* [Physical AI 실전 가이드: AWS에서 로봇 강화학습 처음부터 끝까지](REPORT_Physical_AI_on_AWS.md)
+* [Physical AI Workshop: Train a Walking Robot on AWS for $12](workshop/README.md)
+  * [Table of contents](workshop/SUMMARY.md)
+  * [chapters](workshop/chapters/README.md)
+    * [Lab 1: Physical AI 핵심 개념](workshop/chapters/01-concepts.md)
+    * [Lab 2: AWS GPU 인프라 구축](workshop/chapters/02-infrastructure.md)
+    * [Lab 3: Isaac Lab Docker 이미지 빌드](workshop/chapters/03-docker-build.md)
+    * [Lab 4: 강화학습 훈련 실행](workshop/chapters/04-training.md)
+    * [Lab 5: 학습 결과 분석](workshop/chapters/05-results.md)
+    * [Lab 6: Play 모드 & Policy Export](workshop/chapters/06-play-mode.md)
+    * [Lab 7: 정리 및 다음 단계](workshop/chapters/07-cleanup.md)
+    * [Appendix A: 실전 트러블슈팅 12선](workshop/chapters/appendix-a-troubleshooting.md)
+    * [Appendix B: 비용 분석 & 최적화](workshop/chapters/appendix-b-cost.md)
+    * [Appendix C: 소프트웨어 버전 & 참고자료](workshop/chapters/appendix-c-references.md)

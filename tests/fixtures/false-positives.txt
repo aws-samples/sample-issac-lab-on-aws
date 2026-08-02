@@ -1,0 +1,5 @@
+# False positive samples (patterns that should NOT trigger detection)
+dGhpcyBpcyBhIHRlc3Q=
+password = ""
+api_key = ""
+AKIA_NOT_LONG_ENOUGH

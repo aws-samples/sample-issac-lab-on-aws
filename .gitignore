@@ -1,0 +1,36 @@
+# Secrets & Keys
+*.pem
+*.key
+terraform.tfvars
+.env
+
+# Terraform state (contains sensitive data)
+*.tfstate
+*.tfstate.backup
+.terraform/
+.terraform.lock.hcl
+
+# Build artifacts
+_book/
+node_modules/
+
+# OS
+.DS_Store
+*.swp
+*.swo
+
+# IDE
+.vscode/
+.idea/
+
+# Temporary
+*.tmp
+*.log
+
+# Claude Code
+settings.local.json
+
+# Security scan artifacts (findings snippets contain flagged token patterns)
+scan-report.json
+.playwright-mcp/
+dashboard-verify.png

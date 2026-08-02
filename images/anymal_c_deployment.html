@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ANYmal-C On-Board Deployment</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #06080f;
+    font-family: 'Noto Sans KR', 'Inter', -apple-system, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 60px 40px;
+    color: #e2e8f0;
+  }
+
+  .canvas {
+    width: 1100px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  /* ── Title ── */
+  .header {
+    text-align: center;
+  }
+  .header h1 {
+    font-size: 28px;
+    font-weight: 800;
+    color: #f1f5f9;
+    letter-spacing: -0.5px;
+  }
+  .header h1 span {
+    background: linear-gradient(135deg, #818cf8, #c084fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .header .sub {
+    font-size: 13px;
+    color: #475569;
+    margin-top: 6px;
+    font-weight: 400;
+  }
+
+  /* ── Robot Shell ── */
+  .robot-shell {
+    position: relative;
+    border: 2px solid #1e293b;
+    border-radius: 24px;
+    padding: 36px 40px 40px;
+    background: linear-gradient(180deg, #0c1022 0%, #0a0e1a 100%);
+    overflow: visible;
+  }
+  .robot-shell::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 24px;
+    padding: 2px;
+    background: linear-gradient(135deg, rgba(129,140,248,0.3), rgba(192,132,252,0.1), rgba(56,189,248,0.2));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  .robot-badge {
+    position: absolute;
+    top: -14px;
+    left: 40px;
+    background: linear-gradient(135deg, #818cf8, #6366f1);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 5px 18px;
+    border-radius: 20px;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 15px rgba(99,102,241,0.4);
+  }
+
+  .robot-title-row {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .robot-title-row h2 {
+    font-size: 22px;
+    font-weight: 800;
+    color: #f1f5f9;
+  }
+  .robot-title-row .specs {
+    font-size: 12px;
+    color: #64748b;
+    font-weight: 500;
+  }
+
+  /* ── Inner Grid: Sensors | Jetson | Motors ── */
+  .inner-grid {
+    display: grid;
+    grid-template-columns: 260px 1fr 260px;
+    gap: 0;
+    align-items: stretch;
+    position: relative;
+  }
+
+  /* ── Sensor Panel ── */
+  .panel {
+    padding: 24px;
+    border-radius: 16px;
+    position: relative;
+  }
+  .panel-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .panel-label .icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+  }
+
+  /* Sensor */
+  .sensor-panel {
+    background: linear-gradient(135deg, #0c1a2e 0%, #0a1225 100%);
+    border: 1px solid rgba(56,189,248,0.15);
+  }
+  .sensor-panel .panel-label { color: #38bdf8; }
+  .sensor-panel .icon { background: rgba(56,189,248,0.15); }
+
+  .sensor-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 4px;
+    transition: background 0.2s;
+  }
+  .sensor-item:hover { background: rgba(56,189,248,0.06); }
+  .sensor-item .name {
+    font-size: 13px;
+    font-weight: 500;
+    color: #94a3b8;
+  }
+  .sensor-item .dim {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    color: #38bdf8;
+    background: rgba(56,189,248,0.1);
+    padding: 2px 10px;
+    border-radius: 6px;
+    min-width: 32px;
+    text-align: center;
+  }
+
+  .sensor-group-label {
+    font-size: 9px;
+    font-weight: 700;
+    color: #334155;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 10px 12px 4px;
+  }
+
+  .total-bar {
+    margin-top: 14px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .total-bar .t-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+  }
+  .total-bar .t-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 22px;
+    font-weight: 800;
+  }
+  .total-bar .t-unit {
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  .sensor-total {
+    background: linear-gradient(135deg, rgba(56,189,248,0.12), rgba(56,189,248,0.04));
+    border: 1px solid rgba(56,189,248,0.2);
+  }
+  .sensor-total .t-label, .sensor-total .t-unit { color: #38bdf8; opacity: 0.7; }
+  .sensor-total .t-value { color: #38bdf8; }
+
+  /* ── Center: Jetson ── */
+  .jetson-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0 20px;
+    position: relative;
+  }
+
+  /* Arrows */
+  .arrow-track {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+    pointer-events: none;
+  }
+  .arrow-left, .arrow-right {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .arrow-left { left: -10px; }
+  .arrow-right { right: -10px; }
+
+  .arrow-line {
+    height: 2px;
+    width: 24px;
+    border-radius: 1px;
+  }
+  .arrow-head {
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .arrow-left .arrow-line { background: linear-gradient(90deg, #38bdf8, rgba(56,189,248,0.2)); }
+  .arrow-left .arrow-head { color: #38bdf8; }
+  .arrow-right .arrow-line { background: linear-gradient(90deg, rgba(244,114,182,0.2), #f472b6); }
+  .arrow-right .arrow-head { color: #f472b6; }
+
+  .arrow-label-l, .arrow-label-r {
+    position: absolute;
+    top: calc(50% - 28px);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .arrow-label-l { left: -6px; color: #38bdf8; opacity: 0.5; }
+  .arrow-label-r { right: -6px; color: #f472b6; opacity: 0.5; }
+
+  .jetson-box {
+    width: 100%;
+    max-width: 380px;
+    border-radius: 16px;
+    padding: 28px 24px;
+    background: linear-gradient(135deg, #160f2e 0%, #1a1040 100%);
+    border: 1px solid rgba(167,139,250,0.25);
+    position: relative;
+    z-index: 2;
+  }
+  .jetson-box::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 16px;
+    padding: 1.5px;
+    background: linear-gradient(135deg, rgba(167,139,250,0.4), rgba(129,140,248,0.1), rgba(192,132,252,0.3));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  .jetson-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .jetson-chip {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #7c3aed, #a78bfa);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    box-shadow: 0 4px 20px rgba(124,58,237,0.3);
+  }
+  .jetson-header-text h3 {
+    font-size: 15px;
+    font-weight: 700;
+    color: #e2e8f0;
+  }
+  .jetson-header-text .model {
+    font-size: 11px;
+    color: #7c3aed;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  .engine-file {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    background: rgba(124,58,237,0.08);
+    border: 1px solid rgba(124,58,237,0.15);
+    margin-bottom: 16px;
+  }
+  .engine-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .engine-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 15px;
+    font-weight: 700;
+    color: #c4b5fd;
+  }
+  .engine-desc {
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 2px;
+  }
+
+  /* Data flow inside Jetson */
+  .data-flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 12px 0;
+    margin-bottom: 16px;
+  }
+  .flow-box {
+    text-align: center;
+    padding: 8px 14px;
+    border-radius: 8px;
+  }
+  .flow-box.input-flow {
+    background: rgba(56,189,248,0.08);
+    border: 1px solid rgba(56,189,248,0.15);
+  }
+  .flow-box.output-flow {
+    background: rgba(244,114,182,0.08);
+    border: 1px solid rgba(244,114,182,0.15);
+  }
+  .flow-box .f-dim {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    font-weight: 800;
+  }
+  .flow-box.input-flow .f-dim { color: #38bdf8; }
+  .flow-box.output-flow .f-dim { color: #f472b6; }
+  .flow-box .f-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: #64748b;
+    margin-top: 2px;
+  }
+  .flow-arrow-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    color: #a78bfa;
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .flow-arrow-inner .arr {
+    font-size: 16px;
+    letter-spacing: 2px;
+  }
+
+  /* Specs grid */
+  .specs-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  .spec-card {
+    text-align: center;
+    padding: 10px 6px;
+    border-radius: 10px;
+    background: rgba(167,139,250,0.05);
+    border: 1px solid rgba(167,139,250,0.08);
+  }
+  .spec-card .s-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 15px;
+    font-weight: 700;
+    color: #a78bfa;
+  }
+  .spec-card .s-label {
+    font-size: 9px;
+    color: #64748b;
+    font-weight: 600;
+    margin-top: 3px;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── Motor Panel ── */
+  .motor-panel {
+    background: linear-gradient(135deg, #1a0f1f 0%, #180d1e 100%);
+    border: 1px solid rgba(244,114,182,0.15);
+  }
+  .motor-panel .panel-label { color: #f472b6; }
+  .motor-panel .icon { background: rgba(244,114,182,0.15); }
+
+  .leg-section {
+    margin-bottom: 12px;
+  }
+  .leg-section:last-of-type { margin-bottom: 0; }
+
+  .leg-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 12px;
+    margin-bottom: 6px;
+  }
+  .leg-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+  }
+  .leg-name {
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .leg-name-en {
+    font-size: 10px;
+    font-weight: 500;
+    opacity: 0.5;
+    margin-left: 4px;
+  }
+
+  .joints {
+    display: flex;
+    gap: 5px;
+    padding: 0 12px;
+  }
+  .joint {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 5px 8px;
+    border-radius: 6px;
+    border: 1px solid;
+    text-align: center;
+    flex: 1;
+  }
+  .joint .j-abbr {
+    font-size: 8px;
+    font-weight: 500;
+    display: block;
+    margin-top: 2px;
+    opacity: 0.6;
+  }
+
+  /* Leg colors */
+  .leg-rf .leg-dot { background: #f472b6; }
+  .leg-rf .leg-name { color: #f472b6; }
+  .leg-rf .joint { color: #f9a8d4; background: rgba(244,114,182,0.06); border-color: rgba(244,114,182,0.2); }
+
+  .leg-lf .leg-dot { background: #818cf8; }
+  .leg-lf .leg-name { color: #818cf8; }
+  .leg-lf .joint { color: #a5b4fc; background: rgba(129,140,248,0.06); border-color: rgba(129,140,248,0.2); }
+
+  .leg-rh .leg-dot { background: #fb923c; }
+  .leg-rh .leg-name { color: #fb923c; }
+  .leg-rh .joint { color: #fdba74; background: rgba(251,146,60,0.06); border-color: rgba(251,146,60,0.2); }
+
+  .leg-lh .leg-dot { background: #34d399; }
+  .leg-lh .leg-name { color: #34d399; }
+  .leg-lh .joint { color: #6ee7b7; background: rgba(52,211,153,0.06); border-color: rgba(52,211,153,0.2); }
+
+  .motor-total {
+    background: linear-gradient(135deg, rgba(244,114,182,0.12), rgba(244,114,182,0.04));
+    border: 1px solid rgba(244,114,182,0.2);
+  }
+  .motor-total .t-label, .motor-total .t-unit { color: #f472b6; opacity: 0.7; }
+  .motor-total .t-value { color: #f472b6; }
+
+  /* ── Bottom: Connection strip ── */
+  .connection-strip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 20px 0 0;
+  }
+  .conn-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #1e293b, transparent);
+  }
+  .conn-items {
+    display: flex;
+    gap: 10px;
+  }
+  .conn-tag {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid #1e293b;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .conn-tag .ct-icon {
+    font-size: 12px;
+  }
+
+  /* ── Joint Legend ── */
+  .legend {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    padding: 8px 0;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .legend-abbr {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: #a78bfa;
+    background: rgba(167,139,250,0.1);
+    padding: 3px 8px;
+    border-radius: 5px;
+  }
+  .legend-desc {
+    font-size: 11px;
+    color: #64748b;
+  }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center;
+    font-size: 10px;
+    color: #1e293b;
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+<div class="canvas">
+
+  <!-- Header -->
+  <div class="header">
+    <h1><span>ANYmal-C</span> 온보드 배포 구성</h1>
+    <div class="sub">Sim-to-Real · NVIDIA Jetson Orin · TensorRT FP16 Inference · 200 Hz Control Loop</div>
+  </div>
+
+  <!-- Robot Shell -->
+  <div class="robot-shell">
+    <div class="robot-badge">ANYmal-C ROBOT</div>
+
+    <div class="robot-title-row">
+      <h2>🐾 ANYmal-C</h2>
+      <span class="specs">ANYbotics · 4족 보행 · 12 DOF · ~50 kg</span>
+    </div>
+
+    <div class="inner-grid">
+
+      <!-- Left: Sensors / Input -->
+      <div class="panel sensor-panel">
+        <div class="panel-label">
+          <span class="icon">📡</span>
+          관측 입력 · OBSERVATION
+        </div>
+
+        <div class="sensor-group-label">자세 정보</div>
+        <div class="sensor-item"><span class="name">기본 각속도</span><span class="dim">3</span></div>
+        <div class="sensor-item"><span class="name">중력 투영 벡터</span><span class="dim">3</span></div>
+        <div class="sensor-item"><span class="name">속도 명령 (vx, vy, ω)</span><span class="dim">3</span></div>
+
+        <div class="sensor-group-label">관절 상태</div>
+        <div class="sensor-item"><span class="name">관절 각도</span><span class="dim">12</span></div>
+        <div class="sensor-item"><span class="name">관절 각속도</span><span class="dim">12</span></div>
+
+        <div class="sensor-group-label">히스토리</div>
+        <div class="sensor-item"><span class="name">이전 행동 (t-1)</span><span class="dim">12</span></div>
+        <div class="sensor-item"><span class="name">높이 스캔</span><span class="dim">+α</span></div>
+
+        <div class="total-bar sensor-total">
+          <span class="t-label">TOTAL</span>
+          <span class="t-value">48</span>
+          <span class="t-unit">차원</span>
+        </div>
+      </div>
+
+      <!-- Center: Jetson -->
+      <div class="jetson-col">
+        <div class="arrow-track">
+          <div class="arrow-label-l">obs →</div>
+          <div class="arrow-left">
+            <div class="arrow-line"></div>
+            <span class="arrow-head">▶</span>
+          </div>
+          <div class="arrow-label-r">→ action</div>
+          <div class="arrow-right">
+            <span class="arrow-head">▶</span>
+            <div class="arrow-line"></div>
+          </div>
+        </div>
+
+        <div class="jetson-box">
+          <div class="jetson-header">
+            <div class="jetson-chip">⚡</div>
+            <div class="jetson-header-text">
+              <h3>NVIDIA Jetson Orin</h3>
+              <div class="model">CUDA Cores · Tensor Cores · 275 TOPS</div>
+            </div>
+          </div>
+
+          <div class="engine-file">
+            <span class="engine-icon">🧠</span>
+            <div>
+              <div class="engine-name">policy.engine</div>
+              <div class="engine-desc">TensorRT FP16 최적화 추론 엔진</div>
+            </div>
+          </div>
+
+          <div class="data-flow">
+            <div class="flow-box input-flow">
+              <div class="f-dim">48</div>
+              <div class="f-label">obs 입력</div>
+            </div>
+            <div class="flow-arrow-inner">
+              <span class="arr">→ 추론 →</span>
+              <span>&lt; 1ms</span>
+            </div>
+            <div class="flow-box output-flow">
+              <div class="f-dim">12</div>
+              <div class="f-label">action 출력</div>
+            </div>
+          </div>
+
+          <div class="specs-grid">
+            <div class="spec-card">
+              <div class="s-val">&lt;1ms</div>
+              <div class="s-label">추론 시간</div>
+            </div>
+            <div class="spec-card">
+              <div class="s-val">200Hz</div>
+              <div class="s-label">제어 주파수</div>
+            </div>
+            <div class="spec-card">
+              <div class="s-val">FP16</div>
+              <div class="s-label">정밀도</div>
+            </div>
+            <div class="spec-card">
+              <div class="s-val">15W</div>
+              <div class="s-label">전력</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Motors / Output -->
+      <div class="panel motor-panel">
+        <div class="panel-label">
+          <span class="icon">⚙️</span>
+          관절 출력 · ACTION
+        </div>
+
+        <div class="leg-section leg-rf">
+          <div class="leg-header">
+            <div class="leg-dot"></div>
+            <span class="leg-name">오른쪽 앞다리</span>
+            <span class="leg-name-en">RF</span>
+          </div>
+          <div class="joints">
+            <div class="joint">RF_HAA<span class="j-abbr">좌우</span></div>
+            <div class="joint">RF_HFE<span class="j-abbr">앞뒤</span></div>
+            <div class="joint">RF_KFE<span class="j-abbr">무릎</span></div>
+          </div>
+        </div>
+
+        <div class="leg-section leg-lf">
+          <div class="leg-header">
+            <div class="leg-dot"></div>
+            <span class="leg-name">왼쪽 앞다리</span>
+            <span class="leg-name-en">LF</span>
+          </div>
+          <div class="joints">
+            <div class="joint">LF_HAA<span class="j-abbr">좌우</span></div>
+            <div class="joint">LF_HFE<span class="j-abbr">앞뒤</span></div>
+            <div class="joint">LF_KFE<span class="j-abbr">무릎</span></div>
+          </div>
+        </div>
+
+        <div class="leg-section leg-rh">
+          <div class="leg-header">
+            <div class="leg-dot"></div>
+            <span class="leg-name">오른쪽 뒷다리</span>
+            <span class="leg-name-en">RH</span>
+          </div>
+          <div class="joints">
+            <div class="joint">RH_HAA<span class="j-abbr">좌우</span></div>
+            <div class="joint">RH_HFE<span class="j-abbr">앞뒤</span></div>
+            <div class="joint">RH_KFE<span class="j-abbr">무릎</span></div>
+          </div>
+        </div>
+
+        <div class="leg-section leg-lh">
+          <div class="leg-header">
+            <div class="leg-dot"></div>
+            <span class="leg-name">왼쪽 뒷다리</span>
+            <span class="leg-name-en">LH</span>
+          </div>
+          <div class="joints">
+            <div class="joint">LH_HAA<span class="j-abbr">좌우</span></div>
+            <div class="joint">LH_HFE<span class="j-abbr">앞뒤</span></div>
+            <div class="joint">LH_KFE<span class="j-abbr">무릎</span></div>
+          </div>
+        </div>
+
+        <div class="total-bar motor-total">
+          <span class="t-label">TOTAL</span>
+          <span class="t-value">12</span>
+          <span class="t-unit">차원</span>
+        </div>
+      </div>
+
+    </div><!-- /inner-grid -->
+
+    <!-- Connection strip -->
+    <div class="connection-strip">
+      <div class="conn-line"></div>
+      <div class="conn-items">
+        <div class="conn-tag"><span class="ct-icon">📡</span> IMU (6축)</div>
+        <div class="conn-tag"><span class="ct-icon">🔄</span> 관절 인코더 ×12</div>
+        <div class="conn-tag"><span class="ct-icon">⚡</span> PD 컨트롤러</div>
+        <div class="conn-tag"><span class="ct-icon">🦿</span> SEA 모터 ×12</div>
+        <div class="conn-tag"><span class="ct-icon">🦶</span> 접촉 센서 ×4</div>
+      </div>
+      <div class="conn-line"></div>
+    </div>
+
+  </div><!-- /robot-shell -->
+
+  <!-- Legend -->
+  <div class="legend">
+    <div class="legend-item">
+      <span class="legend-abbr">HAA</span>
+      <span class="legend-desc">Hip Abduction/Adduction (좌우 벌림)</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-abbr">HFE</span>
+      <span class="legend-desc">Hip Flexion/Extension (앞뒤 굽힘)</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-abbr">KFE</span>
+      <span class="legend-desc">Knee Flexion/Extension (무릎 굽힘)</span>
+    </div>
+  </div>
+
+  <div class="footer">Physical AI Workshop · Isaac Lab PPO → TensorRT → ANYmal-C</div>
+
+</div>
+</body>
+</html>

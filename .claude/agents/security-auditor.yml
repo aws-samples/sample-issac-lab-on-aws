@@ -1,0 +1,5 @@
+name: security-auditor
+description: Audit codebase for security vulnerabilities, secret exposure, Terraform misconfigurations, and compliance with security best practices.
+tools: Read, Glob, Grep, Bash(find:*), Bash(git log:*), Bash(terraform validate:*)
+model: sonnet
+color: red

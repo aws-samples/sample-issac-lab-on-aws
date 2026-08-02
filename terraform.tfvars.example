@@ -1,0 +1,29 @@
+###############################################################################
+# terraform.tfvars.example
+# Copy to terraform.tfvars and fill in your values
+###############################################################################
+
+aws_region        = "ap-northeast-2"       # or ap-northeast-2 (Seoul)
+project_name      = "isaac-lab"
+
+# Isaac versions
+isaac_lab_version = "v2.1.0"
+isaac_sim_version = "4.5.0"
+
+# NVIDIA NGC API Key — get yours at https://ngc.nvidia.com/setup/api-key
+ngc_api_key = "YOUR_NGC_API_KEY_HERE"
+
+# SSH — paste your public key, or leave empty to auto-generate
+ssh_public_key    = ""
+allowed_ssh_cidrs = ["YOUR_IP/32"]      # Restrict SSH to your IP
+
+# Storage
+root_volume_size_gb = 300               # OS + Docker images
+data_volume_size_gb = 500               # Datasets + checkpoints
+
+# S3 bucket prefix for checkpoint sync — Terraform creates the bucket as
+# "<prefix>-<account_id>" so the name is globally unique and account-owned
+checkpoint_bucket = "my-isaac-checkpoints"
+
+# Cost management
+enable_idle_stop  = true                # Auto-stop when GPU idle 30 min

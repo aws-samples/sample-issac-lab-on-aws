@@ -1,0 +1,247 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 750" font-family="'Segoe UI', Arial, sans-serif">
+  <defs>
+    <filter id="shadow" x="-2%" y="-2%" width="104%" height="104%">
+      <feDropShadow dx="2" dy="2" stdDeviation="3" flood-opacity="0.15"/>
+    </filter>
+    <linearGradient id="awsGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF9900;stop-opacity:0.08"/>
+      <stop offset="100%" style="stop-color:#FF9900;stop-opacity:0.02"/>
+    </linearGradient>
+    <linearGradient id="vpcGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#8C4FFF;stop-opacity:0.06"/>
+      <stop offset="100%" style="stop-color:#8C4FFF;stop-opacity:0.02"/>
+    </linearGradient>
+    <linearGradient id="ec2Grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ED7100;stop-opacity:0.1"/>
+      <stop offset="100%" style="stop-color:#ED7100;stop-opacity:0.03"/>
+    </linearGradient>
+    <linearGradient id="dockerGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#2496ED;stop-opacity:0.12"/>
+      <stop offset="100%" style="stop-color:#2496ED;stop-opacity:0.04"/>
+    </linearGradient>
+    <linearGradient id="gpuGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#76B900"/>
+      <stop offset="100%" style="stop-color:#5A8F00"/>
+    </linearGradient>
+    <linearGradient id="s3Grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3F8624"/>
+      <stop offset="100%" style="stop-color:#2D6B18"/>
+    </linearGradient>
+    <linearGradient id="cwGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E7157B"/>
+      <stop offset="100%" style="stop-color:#C4105E"/>
+    </linearGradient>
+    <linearGradient id="tfGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7B42BC"/>
+      <stop offset="100%" style="stop-color:#5C2D91"/>
+    </linearGradient>
+    <linearGradient id="outputGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#9C27B0"/>
+      <stop offset="100%" style="stop-color:#7B1FA2"/>
+    </linearGradient>
+    <linearGradient id="robotGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF8F00"/>
+      <stop offset="100%" style="stop-color:#F57C00"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1100" height="750" fill="#FAFBFC" rx="12"/>
+
+  <!-- Title -->
+  <text x="550" y="35" text-anchor="middle" font-size="20" font-weight="700" fill="#232F3E">Physical AI on AWS — Architecture</text>
+  <text x="550" y="55" text-anchor="middle" font-size="12" fill="#666">Isaac Lab RL Training for Quadruped Locomotion on EC2 g6e (L40S)</text>
+
+  <!-- AWS Cloud -->
+  <rect x="30" y="70" width="720" height="660" rx="12" fill="url(#awsGrad)" stroke="#FF9900" stroke-width="2" stroke-dasharray="8,4"/>
+  <rect x="42" y="75" width="120" height="22" rx="4" fill="#FF9900"/>
+  <text x="52" y="90" font-size="12" font-weight="600" fill="white">AWS Cloud</text>
+  <text x="170" y="90" font-size="11" fill="#FF9900" font-weight="500">ap-northeast-2 (Seoul)</text>
+
+  <!-- VPC -->
+  <rect x="55" y="105" width="680" height="480" rx="10" fill="url(#vpcGrad)" stroke="#8C4FFF" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <rect x="65" y="109" width="100" height="20" rx="3" fill="#8C4FFF"/>
+  <text x="75" y="123" font-size="11" font-weight="600" fill="white">VPC</text>
+  <text x="172" y="123" font-size="10" fill="#8C4FFF">10.0.0.0/16 · Public Subnet</text>
+
+  <!-- EC2 Instance -->
+  <rect x="80" y="140" width="640" height="310" rx="8" fill="url(#ec2Grad)" stroke="#ED7100" stroke-width="1.5" filter="url(#shadow)"/>
+  <!-- EC2 Icon -->
+  <rect x="92" y="148" width="28" height="28" rx="6" fill="#ED7100"/>
+  <text x="106" y="167" text-anchor="middle" font-size="14" fill="white" font-weight="700">EC2</text>
+  <text x="130" y="160" font-size="13" font-weight="700" fill="#ED7100">g6e.4xlarge</text>
+  <text x="130" y="175" font-size="10" fill="#666">AMD EPYC 7R13 · 16 vCPU · 128 GiB RAM</text>
+
+  <!-- GPU Card -->
+  <rect x="95" y="190" width="200" height="110" rx="8" fill="url(#gpuGrad)" filter="url(#shadow)"/>
+  <text x="195" y="215" text-anchor="middle" font-size="14" font-weight="700" fill="white">NVIDIA L40S</text>
+  <text x="195" y="235" text-anchor="middle" font-size="11" fill="#E8F5E9">48 GB VRAM · Ada Lovelace</text>
+  <line x1="125" y1="248" x2="265" y2="248" stroke="#A5D6A7" stroke-width="0.5"/>
+  <text x="195" y="268" text-anchor="middle" font-size="10" fill="#C8E6C9">4,096 parallel envs x PPO</text>
+  <text x="195" y="284" text-anchor="middle" font-size="10" fill="#C8E6C9">147M timesteps / 75 min</text>
+
+  <!-- Docker Container -->
+  <rect x="315" y="190" width="390" height="155" rx="8" fill="url(#dockerGrad)" stroke="#2496ED" stroke-width="1.2" filter="url(#shadow)"/>
+  <rect x="327" y="198" width="24" height="24" rx="5" fill="#2496ED"/>
+  <text x="339" y="215" text-anchor="middle" font-size="12" fill="white" font-weight="700">D</text>
+  <text x="360" y="212" font-size="12" font-weight="700" fill="#1565C0">Docker Container</text>
+  <text x="360" y="227" font-size="10" fill="#666">isaac-lab-ready:latest (26.8 GB)</text>
+
+  <!-- Software Stack inside Docker -->
+  <rect x="330" y="240" width="115" height="48" rx="6" fill="#76B900" filter="url(#shadow)"/>
+  <text x="387" y="260" text-anchor="middle" font-size="10" font-weight="600" fill="white">Isaac Sim</text>
+  <text x="387" y="278" text-anchor="middle" font-size="9" fill="#E8F5E9">4.5.0</text>
+
+  <rect x="455" y="240" width="115" height="48" rx="6" fill="#76B900" filter="url(#shadow)"/>
+  <text x="512" y="260" text-anchor="middle" font-size="10" font-weight="600" fill="white">Isaac Lab</text>
+  <text x="512" y="278" text-anchor="middle" font-size="9" fill="#E8F5E9">v2.1.0</text>
+
+  <rect x="580" y="240" width="115" height="48" rx="6" fill="#FF6F00" filter="url(#shadow)"/>
+  <text x="637" y="260" text-anchor="middle" font-size="10" font-weight="600" fill="white">RSL-RL (PPO)</text>
+  <text x="637" y="278" text-anchor="middle" font-size="9" fill="#FFF3E0">PyTorch 2.5.1</text>
+
+  <!-- Task -->
+  <rect x="330" y="298" width="365" height="35" rx="6" fill="#FFF3E0" stroke="#FF6F00" stroke-width="1"/>
+  <text x="512" y="320" text-anchor="middle" font-size="10" fill="#E65100" font-weight="600">Task: Isaac-Velocity-Rough-Anymal-C-v0 (ANYmal-C)</text>
+
+  <!-- CUDA Arrow GPU -> Docker -->
+  <line x1="295" y1="245" x2="315" y2="245" stroke="#76B900" stroke-width="2" marker-end="url(#arrowGreen)"/>
+  <defs><marker id="arrowGreen" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#76B900"/></marker></defs>
+  <text x="305" y="238" text-anchor="middle" font-size="8" fill="#76B900" font-weight="600">CUDA</text>
+
+  <!-- EBS Volumes -->
+  <rect x="95" y="315" width="200" height="125" rx="8" fill="white" stroke="#3F8624" stroke-width="1" filter="url(#shadow)"/>
+  <text x="195" y="335" text-anchor="middle" font-size="11" font-weight="700" fill="#3F8624">Storage (EBS gp3)</text>
+
+  <rect x="110" y="345" width="170" height="26" rx="4" fill="#E8F5E9"/>
+  <text x="118" y="362" font-size="10" fill="#2E7D32" font-weight="600">/</text>
+  <text x="180" y="362" text-anchor="middle" font-size="9" fill="#555">300 GB · OS + Docker</text>
+
+  <rect x="110" y="377" width="170" height="26" rx="4" fill="#E8F5E9"/>
+  <text x="118" y="394" font-size="10" fill="#2E7D32" font-weight="600">/data</text>
+  <text x="195" y="394" text-anchor="middle" font-size="9" fill="#555">500 GB · Checkpoints</text>
+
+  <rect x="110" y="409" width="170" height="26" rx="4" fill="#FFF3E0"/>
+  <text x="118" y="426" font-size="10" fill="#E65100" font-weight="600">/scratch</text>
+  <text x="205" y="426" text-anchor="middle" font-size="9" fill="#555">NVMe · Shader cache</text>
+
+  <!-- Training Outputs -->
+  <rect x="315" y="355" width="390" height="85" rx="8" fill="white" stroke="#7B1FA2" stroke-width="1" filter="url(#shadow)"/>
+  <text x="510" y="375" text-anchor="middle" font-size="11" font-weight="700" fill="#7B1FA2">Training Outputs</text>
+
+  <rect x="330" y="388" width="110" height="40" rx="6" fill="url(#outputGrad)" filter="url(#shadow)"/>
+  <text x="385" y="406" text-anchor="middle" font-size="9" font-weight="600" fill="white">policy_jit.pt</text>
+  <text x="385" y="420" text-anchor="middle" font-size="8" fill="#E1BEE7">TorchScript JIT</text>
+
+  <rect x="452" y="388" width="110" height="40" rx="6" fill="url(#outputGrad)" filter="url(#shadow)"/>
+  <text x="507" y="406" text-anchor="middle" font-size="9" font-weight="600" fill="white">policy.onnx</text>
+  <text x="507" y="420" text-anchor="middle" font-size="8" fill="#E1BEE7">ONNX / TensorRT</text>
+
+  <rect x="574" y="388" width="118" height="40" rx="6" fill="url(#outputGrad)" filter="url(#shadow)"/>
+  <text x="633" y="406" text-anchor="middle" font-size="9" font-weight="600" fill="white">play.mp4</text>
+  <text x="633" y="420" text-anchor="middle" font-size="8" fill="#E1BEE7">30s 1280x720</text>
+
+  <!-- S3 Bucket -->
+  <rect x="255" y="510" width="200" height="60" rx="8" fill="white" stroke="#3F8624" stroke-width="1.5" filter="url(#shadow)"/>
+  <rect x="268" y="520" width="30" height="30" rx="6" fill="url(#s3Grad)"/>
+  <text x="283" y="540" text-anchor="middle" font-size="14" fill="white" font-weight="700">S3</text>
+  <text x="310" y="537" font-size="12" font-weight="600" fill="#3F8624">Amazon S3</text>
+  <text x="310" y="555" font-size="10" fill="#666">Checkpoint Bucket</text>
+
+  <!-- S3 Arrow -->
+  <line x1="355" y1="460" x2="355" y2="507" stroke="#3F8624" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arrowS3)"/>
+  <defs><marker id="arrowS3" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#3F8624"/></marker></defs>
+  <text x="380" y="485" font-size="9" fill="#3F8624" font-weight="500">30min auto-sync</text>
+
+  <!-- CloudWatch -->
+  <rect x="505" y="600" width="210" height="55" rx="8" fill="white" stroke="#E7157B" stroke-width="1.5" filter="url(#shadow)"/>
+  <rect x="518" y="610" width="30" height="30" rx="6" fill="url(#cwGrad)"/>
+  <text x="533" y="628" text-anchor="middle" font-size="10" fill="white" font-weight="700">CW</text>
+  <text x="560" y="625" font-size="12" font-weight="600" fill="#E7157B">CloudWatch</text>
+  <text x="560" y="643" font-size="10" fill="#666">GPU idle 30min → Auto Stop</text>
+
+  <!-- CloudWatch Arrow -->
+  <path d="M 610 600 L 610 460 L 600 460" fill="none" stroke="#E7157B" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arrowCW)"/>
+  <defs><marker id="arrowCW" markerWidth="8" markerHeight="6" refX="0" refY="3" orient="auto"><path d="M8,0 L0,3 L8,6" fill="#E7157B"/></marker></defs>
+  <text x="620" y="530" font-size="9" fill="#E7157B" font-weight="500">auto stop</text>
+
+  <!-- ===== Right Side: External Components ===== -->
+
+  <!-- Terraform -->
+  <rect x="800" y="90" width="270" height="80" rx="10" fill="white" stroke="#7B42BC" stroke-width="1.5" filter="url(#shadow)"/>
+  <rect x="815" y="105" width="40" height="40" rx="8" fill="url(#tfGrad)"/>
+  <text x="835" y="130" text-anchor="middle" font-size="16" fill="white" font-weight="700">TF</text>
+  <text x="868" y="122" font-size="14" font-weight="700" fill="#7B42BC">Terraform</text>
+  <text x="868" y="140" font-size="11" fill="#666">Infrastructure as Code</text>
+  <text x="868" y="155" font-size="10" fill="#999">main.tf · variables.tf · outputs.tf</text>
+
+  <!-- Terraform -> EC2 Arrow -->
+  <path d="M 800 140 L 730 140 L 730 200" fill="none" stroke="#7B42BC" stroke-width="2" marker-end="url(#arrowTF)"/>
+  <defs><marker id="arrowTF" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#7B42BC"/></marker></defs>
+  <text x="760" y="158" font-size="9" fill="#7B42BC" font-weight="600">provision</text>
+
+  <!-- Developer -->
+  <rect x="800" y="210" width="270" height="75" rx="10" fill="white" stroke="#232F3E" stroke-width="1.5" filter="url(#shadow)"/>
+  <!-- User Icon -->
+  <circle cx="835" cy="237" r="12" fill="#232F3E"/>
+  <circle cx="835" cy="228" r="6" fill="#FAFBFC"/>
+  <ellipse cx="835" cy="244" rx="10" ry="6" fill="#FAFBFC"/>
+  <text x="858" y="240" font-size="14" font-weight="700" fill="#232F3E">Developer</text>
+  <text x="858" y="258" font-size="11" fill="#666">SSH (port 22) · NICE DCV (8443)</text>
+
+  <!-- Developer -> EC2 Arrow -->
+  <path d="M 800 255 L 730 255" fill="none" stroke="#232F3E" stroke-width="2" marker-end="url(#arrowDev)"/>
+  <defs><marker id="arrowDev" markerWidth="8" markerHeight="6" refX="0" refY="3" orient="auto"><path d="M8,0 L0,3 L8,6" fill="#232F3E"/></marker></defs>
+  <text x="762" y="248" font-size="9" fill="#232F3E" font-weight="500">SSH / DCV</text>
+
+  <!-- Security Group badge -->
+  <rect x="800" y="310" width="270" height="50" rx="8" fill="#FFEAEA" stroke="#DD3522" stroke-width="1" filter="url(#shadow)"/>
+  <text x="935" y="332" text-anchor="middle" font-size="11" font-weight="600" fill="#DD3522">Security Group</text>
+  <text x="935" y="348" text-anchor="middle" font-size="10" fill="#DD3522">Inbound: SSH (22) + DCV (8443)</text>
+
+  <!-- IAM Role -->
+  <rect x="800" y="385" width="270" height="50" rx="8" fill="white" stroke="#DD344C" stroke-width="1" filter="url(#shadow)"/>
+  <text x="935" y="407" text-anchor="middle" font-size="11" font-weight="600" fill="#DD344C">IAM Instance Profile</text>
+  <text x="935" y="423" text-anchor="middle" font-size="10" fill="#666">S3 + CloudWatch access</text>
+
+  <!-- Sim-to-Real Robot -->
+  <rect x="800" y="480" width="270" height="90" rx="10" fill="white" stroke="#F57C00" stroke-width="2" filter="url(#shadow)"/>
+  <text x="935" y="510" text-anchor="middle" font-size="16" font-weight="700" fill="#F57C00">Real Robot</text>
+  <text x="935" y="530" text-anchor="middle" font-size="12" fill="#666">ANYmal-C Quadruped</text>
+  <text x="935" y="548" text-anchor="middle" font-size="10" fill="#999">Sim-to-Real Transfer</text>
+  <text x="935" y="562" text-anchor="middle" font-size="9" fill="#999">JIT / ONNX → Jetson / C++</text>
+
+  <!-- Output -> Robot Arrow -->
+  <path d="M 705 420 L 755 420 L 755 525 L 800 525" fill="none" stroke="#F57C00" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arrowRobot)"/>
+  <defs><marker id="arrowRobot" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#F57C00"/></marker></defs>
+  <text x="770" y="475" font-size="9" fill="#F57C00" font-weight="600" transform="rotate(-90,770,475)">policy deploy</text>
+
+  <!-- Cost Badge -->
+  <rect x="800" y="610" width="270" height="55" rx="10" fill="#E8F5E9" stroke="#4CAF50" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="935" y="633" text-anchor="middle" font-size="13" font-weight="700" fill="#2E7D32">Total Cost: ~$12</text>
+  <text x="935" y="653" text-anchor="middle" font-size="11" fill="#4CAF50">75 min training · 147M timesteps</text>
+
+  <!-- Legend -->
+  <rect x="30" y="700" width="1040" height="35" rx="6" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <circle cx="60" cy="718" r="5" fill="#76B900"/>
+  <text x="72" y="722" font-size="9" fill="#555">NVIDIA</text>
+  <circle cx="130" cy="718" r="5" fill="#2496ED"/>
+  <text x="142" y="722" font-size="9" fill="#555">Docker</text>
+  <circle cx="200" cy="718" r="5" fill="#ED7100"/>
+  <text x="212" y="722" font-size="9" fill="#555">EC2</text>
+  <circle cx="260" cy="718" r="5" fill="#3F8624"/>
+  <text x="272" y="722" font-size="9" fill="#555">Storage</text>
+  <circle cx="340" cy="718" r="5" fill="#7B1FA2"/>
+  <text x="352" y="722" font-size="9" fill="#555">Outputs</text>
+  <circle cx="420" cy="718" r="5" fill="#7B42BC"/>
+  <text x="432" y="722" font-size="9" fill="#555">Terraform</text>
+  <circle cx="510" cy="718" r="5" fill="#E7157B"/>
+  <text x="522" y="722" font-size="9" fill="#555">CloudWatch</text>
+  <circle cx="610" cy="718" r="5" fill="#F57C00"/>
+  <text x="622" y="722" font-size="9" fill="#555">Sim-to-Real</text>
+
+  <line x1="710" y1="718" x2="730" y2="718" stroke="#555" stroke-width="1.5"/>
+  <text x="738" y="722" font-size="9" fill="#555">Direct</text>
+  <line x1="790" y1="718" x2="810" y2="718" stroke="#555" stroke-width="1.5" stroke-dasharray="4,2"/>
+  <text x="818" y="722" font-size="9" fill="#555">Async / Auto</text>
+</svg>
